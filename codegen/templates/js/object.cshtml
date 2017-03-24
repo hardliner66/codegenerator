@@ -1,0 +1,13 @@
+class @Model.Name {
+  constructor(options) {
+    if (options) {
+      @foreach(var p in Model.Properties) {
+        @Include("object.constructor", p)
+      }
+
+    }
+  }
+}
+
+let @(Model.Name)Object = new @(Model.Name)({@Model.Properties[0].Name:"test"})
+console.log(@(Model.Name)Object.@Model.Properties[0].Name)

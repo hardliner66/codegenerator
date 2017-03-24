@@ -1,0 +1,7 @@
+class @Model.Name {
+    @foreach(var p in @Model.Properties) {
+        if(!Helper.IsSet(p.Attributes, "ignore")) {
+            @Include("constant", p)
+        }
+    }
+}
