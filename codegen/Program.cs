@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -10,9 +10,44 @@ using RazorEngine.Templating; // For extension methods.
 using System.Runtime.Serialization;
 using CommandLine;
 using CommandLine.Text;
+using System.Dynamic;
+using System.CodeDom.Compiler;
+using Microsoft.CSharp;
+using System.Reflection;
 
-namespace m2svcgen
+namespace Codegen
 {
+    public class Helper
+    {
+        public bool IsSet(ImmutableDictionary<string, string> attributes, string name)
+        {
+            return attributes.ContainsKey(name) && attributes[name].ToLower() == "true";
+        }
+
+        public string Get(ImmutableDictionary<string, string> attributes, string name, string defaultValue)
+        {
+            return attributes.ContainsKey(name) ? attributes[name] : defaultValue;
+        }
+
+        //public string FileName { get { return FileNameInternal; } set { FileNameInternal = value; } }
+    }
+
+    public class CustomizedTemplate<T> : TemplateBase<T>
+    {
+        public new T Model
+        {
+            get { return base.Model; }
+            //set { base.Model = value; }
+        }
+
+        public CustomizedTemplate() : base()
+        {
+            Helper = new Helper();
+        }
+        public Helper Helper { get; }
+
+        Dictionary<string, dynamic> Functions { get; set; } = new Dictionary<string, dynamic>();
+    }
     public class Property
     {
         public string Name { get; }
@@ -100,36 +135,6 @@ namespace m2svcgen
             {
                 print(output.Root, 0);
             }
-        }
-
-        public class Helper
-        {
-            public bool IsSet(ImmutableDictionary<string, string> attributes, string name)
-            {
-                return attributes.ContainsKey(name) && attributes[name].ToLower() == "true";
-            }
-
-            public string Get(ImmutableDictionary<string, string> attributes, string name, string defaultValue)
-            {
-                return attributes.ContainsKey(name) ? attributes[name] : defaultValue;
-            }
-
-            public string FileName { get { return FileNameInternal; } set { FileNameInternal = value; } }
-        }
-
-        public class MyCustomizedTemplate<T> : TemplateBase<T>
-        {
-            public new T Model
-            {
-                get { return base.Model; }
-                //set { base.Model = value; }
-            }
-
-            public MyCustomizedTemplate() : base()
-            {
-                Helper = new Helper();
-            }
-            public Helper Helper { get; }
         }
 
         static ImmutableDictionary<string, string> getAttributes(ParseTreeNode node, int attributePosition)
@@ -225,23 +230,58 @@ namespace m2svcgen
                         }
                         Global global = new Global(objectList, System.IO.Path.GetFileNameWithoutExtension(options.DataFile));
 
+                        string path = options.TemplateDir;
+
                         var config = new RazorEngine.Configuration.TemplateServiceConfiguration();
                         config.DisableTempFileLocking = true;
                         config.EncodedStringFactory = new RazorEngine.Text.RawStringFactory();
                         config.CachingProvider = new DefaultCachingProvider(t => { });
-                        config.BaseTemplateType = typeof(MyCustomizedTemplate<>);
+
+
+
+                        if (System.IO.File.Exists(System.IO.Path.Combine(path, "helper.cs")))
+                        {
+                            CSharpCodeProvider provider = new CSharpCodeProvider();
+                            CompilerParameters parameters = new CompilerParameters();
+                            
+                            parameters.ReferencedAssemblies.Add(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "RazorEngine.dll"));
+                            parameters.ReferencedAssemblies.Add(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "codegen.exe"));
+                            // True - memory generation, false - external file generation
+                            parameters.GenerateInMemory = true;
+                            // True - exe file generation, false - dll file generation
+                            parameters.GenerateExecutable = false;
+                            parameters.OutputAssembly = "TemplateHelper.dll";
+
+                            CompilerResults results = provider.CompileAssemblyFromSource(parameters, System.IO.File.ReadAllText(System.IO.Path.Combine(path, "helper.cs")));
+                            if (results.Errors.HasErrors)
+                            {
+                                StringBuilder sb = new StringBuilder();
+
+                                foreach (CompilerError error in results.Errors)
+                                {
+                                    sb.AppendLine(String.Format("Error ({0}): {1}", error.ErrorNumber, error.ErrorText));
+                                }
+
+                                throw new InvalidOperationException(sb.ToString());
+                            }
+                            Assembly assembly = results.CompiledAssembly;
+                            Type program = assembly.GetType("Codegen.Template`1");
+                            Assembly.LoadFrom("TemplateHelper.dll");
+                            config.BaseTemplateType = program;
+                        } else
+                        {
+                            config.BaseTemplateType = typeof(CustomizedTemplate<>);
+                        }
 
                         var service = RazorEngineService.Create(config);
-
-                        string path = options.TemplateDir;
-
+                        
                         foreach (var f in System.IO.Directory.EnumerateFiles(path, "*.cshtml"))
                         {
                             string template = System.IO.File.ReadAllText(f);
 
                             var name = System.IO.Path.GetFileNameWithoutExtension(f);
 
-                            if (name != "main")
+                            if (name.ToLower() != "main") 
                             {
                                 service.AddTemplate(name, template);
                             }

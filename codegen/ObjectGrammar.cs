@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace m2svcgen
+namespace Codegen
 {
     class ObjectGrammar : Grammar
     {
