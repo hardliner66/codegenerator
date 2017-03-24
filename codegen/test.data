@@ -1,3 +1,4 @@
 ﻿SomeObject [interfaced] {
 	SomeValue: String [name=some_value]
+	SomeOtherValue: List String [name=some_other_value]
 }

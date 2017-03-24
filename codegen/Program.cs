@@ -115,14 +115,14 @@ namespace m2svcgen
             public new T Model
             {
                 get { return base.Model; }
-                set { base.Model = value; }
+                //set { base.Model = value; }
             }
 
             public MyCustomizedTemplate() : base()
             {
                 Helper = new Helper();
             }
-            public Helper Helper { get; set; }
+            public Helper Helper { get; }
         }
 
         static ImmutableDictionary<string, string> getAttributes(ParseTreeNode node, int attributePosition)
