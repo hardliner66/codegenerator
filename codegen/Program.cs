@@ -14,6 +14,9 @@ using System.Dynamic;
 using System.CodeDom.Compiler;
 using Microsoft.CSharp;
 using System.Reflection;
+using System.Security.Policy;
+using System.Security;
+using System.Security.Permissions;
 
 namespace Codegen
 {
@@ -109,6 +112,9 @@ namespace Codegen
               HelpText = "Out file.")]
             public string OutputFile { get; set; }
 
+            [Option('@', Required = false)]
+            public string TempDll { get; set; }
+
             [ParserState]
             public IParserState LastParserState { get; set; }
 
@@ -169,6 +175,35 @@ namespace Codegen
 
         static void Main(string[] args)
         {
+            if (AppDomain.CurrentDomain.IsDefaultAppDomain())
+            {
+                // RazorEngine cannot clean up from the default appdomain...
+                Console.WriteLine("Switching to secound AppDomain, for RazorEngine...");
+                AppDomainSetup adSetup = new AppDomainSetup();
+                adSetup.ApplicationBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+                var current = AppDomain.CurrentDomain;
+                // You only need to add strongnames when your appdomain is not a full trust environment.
+                var strongNames = new StrongName[0];
+
+                string generatedDll = System.IO.Path.GetTempFileName();
+
+                List<string> arguments = new List<string>(args);
+                arguments.Add("-@");
+                arguments.Add(generatedDll);
+
+                var domain = AppDomain.CreateDomain(
+                    "MyMainDomain", null,
+                    current.SetupInformation, new PermissionSet(PermissionState.Unrestricted),
+                    strongNames);
+                var exitCode = domain.ExecuteAssembly(Assembly.GetExecutingAssembly().Location, arguments.ToArray());
+                // RazorEngine will cleanup. 
+                AppDomain.Unload(domain);
+                if (System.IO.File.Exists(generatedDll))
+                {
+                    System.IO.File.Delete(generatedDll);
+                }
+                return;
+            }
 
             var options = new Options();
             if (CommandLine.Parser.Default.ParseArguments(args, options))
@@ -250,7 +285,8 @@ namespace Codegen
                             parameters.GenerateInMemory = true;
                             // True - exe file generation, false - dll file generation
                             parameters.GenerateExecutable = false;
-                            parameters.OutputAssembly = "TemplateHelper.dll";
+
+                            parameters.OutputAssembly = options.TempDll; // ;
 
                             CompilerResults results = provider.CompileAssemblyFromSource(parameters, System.IO.File.ReadAllText(System.IO.Path.Combine(path, "helper.cs")));
                             if (results.Errors.HasErrors)
@@ -266,7 +302,8 @@ namespace Codegen
                             }
                             Assembly assembly = results.CompiledAssembly;
                             Type program = assembly.GetType("Codegen.Template`1");
-                            Assembly.LoadFrom("TemplateHelper.dll");
+                            
+                            Assembly.LoadFrom(options.TempDll);
                             config.BaseTemplateType = program;
                         } else
                         {
