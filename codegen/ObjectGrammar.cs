@@ -12,7 +12,8 @@ namespace m2svcgen
         public ObjectGrammar() : base(false)
         {
             //var identifier = new RegexBasedTerminal("identifier", "[a-zA-Z][a-zA-Z0-9_]*", "list");
-            var identifier = new RegexBasedTerminal("identifier", @"\b((?!list)[a-zA-Z0-9_])+\b");
+            IdentifierTerminal identifier = TerminalFactory.CreateCSharpIdentifier("Identifier");
+            //var identifier = new RegexBasedTerminal("identifier", @"\b((?!list)[a-zA-Z0-9_])+\b");
             var value = new RegexBasedTerminal("name", @"\b[a-zA-Z0-9_]+\b");
 
             var @object = new NonTerminal("object");

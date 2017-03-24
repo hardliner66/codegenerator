@@ -1,7 +1,7 @@
-@if(@Helper.IsSet(Model.attributes, "interfaced")) {
-    @:T@(Model.name) = class(TInterfacedObject, IIsSerializable, I@(Model.name))
+@if(@Helper.IsSet(Model.Attributes, "interfaced")) {
+    @:T@(Model.Name) = class(TInterfacedObject, IIsSerializable, I@(Model.Name))
 } else {
-    @:T@(Model.name) = class(TInterfacedObject, IIsSerializable)
+    @:T@(Model.Name) = class(TInterfacedObject, IIsSerializable)
 }
     strict private
 
@@ -10,7 +10,7 @@
         strict private
 			constructor Create(); reintroduce; virtual; abstract; // Prevent anyone from accessing the constructor
 		public
-			@foreach(var p in Model.properties) {
+			@foreach(var p in Model.Properties) {
                 @Include("declaration.object.key_constants", p)
             }
 
@@ -19,8 +19,8 @@
     strict private
 
     public
-    @foreach(var p in Model.properties) {
-        if(Helper.IsSet(Model.attributes, "list")) {
+    @foreach(var p in Model.Properties) {
+        if(Helper.IsSet(Model.Attributes, "list")) {
             @Include("declaration.property.list", p)
         } else {
             @Include("declaration.property", p)

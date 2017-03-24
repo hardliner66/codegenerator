@@ -15,45 +15,48 @@ namespace m2svcgen
 {
     public class Property
     {
-        public string name { get; }
-        public string type { get; }
-        public bool list { get; }
-        
-        public ImmutableDictionary<string, string> attributes { get; }
+        public string Name { get; }
+        public string Type { get; }
+        public bool List { get; }
+
+        public ImmutableDictionary<string, string> Attributes { get; }
         public Property(string name, string type, bool list, ImmutableDictionary<string, string> attributes)
         {
-            this.name = name;
-            this.type = type;
-            this.list = list;
-            this.attributes = attributes;
+            Name = name;
+            Type = type;
+            List = list;
+            Attributes = attributes;
         }
     }
 
     public class Object
     {
-        public string name { get; }
-        public ImmutableList<Property> properties { get; }
-        public ImmutableDictionary<string, string> attributes { get; }
+        public string Name { get; }
+        public ImmutableList<Property> Properties { get; }
+        public ImmutableDictionary<string, string> Attributes { get; }
         public Object(string name, ImmutableList<Property> properties, ImmutableDictionary<string, string> attributes)
         {
-            this.name = name;
-            this.properties = properties;
-            this.attributes = attributes;
+            Name = name;
+            Properties = properties;
+            Attributes = attributes;
         }
     }
 
     public class Global
     {
-        public ImmutableList<Object> objects { get; set; }
-        public Global(ImmutableList<Object> objects)
+        public ImmutableList<Object> Objects { get; }
+        public string Namespace { get; }
+        public Global(ImmutableList<Object> objects, string @namespace)
         {
-            this.objects = objects;
+            Objects = objects;
+            Namespace = @namespace;
         }
     }
 
     public class Program
     {
         const string DEFAULT_OUTPUT = "<stdout>";
+        public static string FileNameInternal { get; set; }
 
         class Options
         {
@@ -108,6 +111,8 @@ namespace m2svcgen
             {
                 return attributes.ContainsKey(name) ? attributes[name] : defaultValue;
             }
+
+            public string FileName { get { return FileNameInternal; } set { FileNameInternal = value; } }
         }
 
         public class MyCustomizedTemplate<T> : TemplateBase<T>
@@ -205,7 +210,7 @@ namespace m2svcgen
 
                             objectList = objectList.Add(new Object(objectNode.ChildNodes[0].Token.Value.ToString(), properties, attributes));
                         }
-                        Global global = new Global(objectList);
+                        Global global = new Global(objectList, System.IO.Path.GetFileNameWithoutExtension(options.DataFile));
 
                         var config = new RazorEngine.Configuration.TemplateServiceConfiguration();
                         config.DisableTempFileLocking = true;

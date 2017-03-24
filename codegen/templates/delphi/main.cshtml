@@ -8,13 +8,13 @@ uses
 	m2.Common.Serializer.Interfaces;
 
 type
-@foreach (var o in Model.objects)
+@foreach (var o in Model.Objects)
 {
     @Include("forward_decl", o)
 }
 
 
-@foreach (var o in Model.objects)
+@foreach (var o in Model.Objects)
 {
     @Include("declaration", o)
 }
@@ -22,7 +22,7 @@ type
 
 implementation
 
-@foreach (var o in Model.objects)
+@foreach (var o in Model.Objects)
 {
     @Include("implementation", o)
 }
