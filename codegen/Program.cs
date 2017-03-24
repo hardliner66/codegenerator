@@ -18,14 +18,16 @@ namespace m2svcgen
         public string Name { get; }
         public string Type { get; }
         public bool List { get; }
+        public string Default { get; }
 
         public ImmutableDictionary<string, string> Attributes { get; }
-        public Property(string name, string type, bool list, ImmutableDictionary<string, string> attributes)
+        public Property(string name, string type, bool list, ImmutableDictionary<string, string> attributes, string default_value)
         {
             Name = name;
             Type = type;
             List = list;
             Attributes = attributes;
+            Default = default_value;
         }
     }
 
@@ -150,6 +152,16 @@ namespace m2svcgen
             return attributes;
         }
 
+        static string getDefaultValue(ParseTreeNode node)
+        {
+            string default_value = "";
+            if (node.ChildNodes[2].ChildNodes.Count > 0)
+            {
+                default_value = node.ChildNodes[2].ChildNodes[0].ChildNodes[0].ChildNodes[0].Token.Value.ToString();
+            }
+            return default_value;
+        }
+
         static void Main(string[] args)
         {
 
@@ -202,7 +214,8 @@ namespace m2svcgen
                                     propertyNode.ChildNodes[0].Token.Value.ToString(),
                                     type,
                                     list,
-                                    getAttributes(propertyNode, 2)
+                                    getAttributes(propertyNode, 3),
+                                    getDefaultValue(propertyNode)
                                 );
 
                                 properties = properties.Add(p);

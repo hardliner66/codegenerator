@@ -28,6 +28,8 @@ namespace m2svcgen
             var attribute_kv = new NonTerminal("attribute_kv");
             var attribute_value = new NonTerminal("attribute_value");
             var attribute_flag = new NonTerminal("attribute_flag");
+            var default_value = new NonTerminal("default_value");
+            var default_value_opt = new NonTerminal("default_value_opt");
             var type = new NonTerminal("type");
             var list = new NonTerminal("list");
             var comma = ToTerm(",", "comma");
@@ -45,7 +47,10 @@ namespace m2svcgen
             list.Rule = "List" + identifier;
             type.Rule = identifier | list;
 
-            property.Rule = identifier + ":" + type + attributeList_opt;
+            default_value.Rule = ToTerm("=") + attribute_value;
+            default_value_opt.Rule = Empty | default_value;
+
+            property.Rule = identifier + ":" + type + default_value_opt + attributeList_opt;
 
             properties.Rule = MakePlusRule(properties, property);
 
