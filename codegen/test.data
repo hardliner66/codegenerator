@@ -1,4 +1,7 @@
 ﻿SomeObject [interfaced] {
 	SomeValue: String [name=some_value]
 	SomeOtherValue: List String [name=some_other_value]
+
+	
+	SomeQuotedValue: List String [name="some other value"]
 }

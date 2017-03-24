@@ -15,6 +15,7 @@ namespace m2svcgen
             IdentifierTerminal identifier = TerminalFactory.CreateCSharpIdentifier("Identifier");
             //var identifier = new RegexBasedTerminal("identifier", @"\b((?!list)[a-zA-Z0-9_])+\b");
             var value = new RegexBasedTerminal("name", @"\b[a-zA-Z0-9_]+\b");
+            var str = new QuotedValueLiteral("value", "\"", TypeCode.String);
 
             var @object = new NonTerminal("object");
             var objectList = new NonTerminal("objectList");
@@ -24,15 +25,18 @@ namespace m2svcgen
             var attributeList = new NonTerminal("attributeList");
             var attributes = new NonTerminal("attributes");
             var attribute = new NonTerminal("attribute");
+            var attribute_kv = new NonTerminal("attribute_kv");
             var attribute_value = new NonTerminal("attribute_value");
             var attribute_flag = new NonTerminal("attribute_flag");
             var type = new NonTerminal("type");
             var list = new NonTerminal("list");
             var comma = ToTerm(",", "comma");
 
-            attribute_value.Rule = identifier + "=" + value;
+            attribute_value.Rule = value | str;
+
+            attribute_kv.Rule = identifier + "=" + attribute_value;
             attribute_flag.Rule = identifier;
-            attribute.Rule = attribute_value | attribute_flag;
+            attribute.Rule = attribute_kv | attribute_flag;
             attributes.Rule = MakePlusRule(attributes, comma, attribute);
 
             attributeList.Rule = "[" + attributes + "]";
