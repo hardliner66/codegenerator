@@ -1,0 +1,35 @@
+﻿unit m2.Customer.Data.DomainModel;
+
+interface
+
+uses
+	System.JSON,
+	Generics.Collections,
+	m2.Common.Serializer.Interfaces;
+
+type
+@foreach (var o in Model.objects)
+{
+    @Include("forward_decl", o)
+}
+
+
+@foreach (var o in Model.objects)
+{
+    @Include("declaration", o)
+}
+
+
+implementation
+
+@foreach (var o in Model.objects)
+{
+    @Include("implementation", o)
+}
+
+uses
+	System.SysUtils,
+	m2.Common.JsonHelper,
+	m2.Common.Memory;
+
+end.

@@ -1,0 +1,37 @@
+@if(@Helper.IsSet(Model.attributes, "interfaced")) {
+    @:T@(Model.name) = class(TInterfacedObject, IIsSerializable, I@(Model.name))
+} else {
+    @:T@(Model.name) = class(TInterfacedObject, IIsSerializable)
+}
+    strict private
+
+    strict private
+        type KeyConstants = class abstract
+        strict private
+			constructor Create(); reintroduce; virtual; abstract; // Prevent anyone from accessing the constructor
+		public
+			@foreach(var p in Model.properties) {
+                @Include("declaration.object.key_constants", p)
+            }
+
+		end;
+
+    strict private
+
+    public
+    @foreach(var p in Model.properties) {
+        if(Helper.IsSet(Model.attributes, "list")) {
+            @Include("declaration.property.list", p)
+        } else {
+            @Include("declaration.property", p)
+        }
+    }
+
+
+        function Serialize(out value: string): Cardinal; overload;
+        function Deserialize(const value: string): Cardinal; overload;
+
+        function Serialize(out value: TJSONValue): Cardinal; overload;
+        function Deserialize(const value: TJSONValue): Cardinal; overload;
+
+end;

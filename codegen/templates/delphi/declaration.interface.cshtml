@@ -1,0 +1,6 @@
+    I@(Model.name) = interface(IIsSerializable)
+    @foreach(var p in Model.properties) {
+        @Include("declaration.property", p)
+    }
+
+    end;
