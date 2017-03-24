@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,25 +11,44 @@ using System.Runtime.Serialization;
 using CommandLine;
 using CommandLine.Text;
 
-namespace codegen
+namespace m2svcgen
 {
     public class Property
     {
-        public string name { get; set; }
-        public string type { get; set; }
-        public Dictionary<string, string> attributes { get; set; } = new Dictionary<string, string>();
+        public string name { get; }
+        public string type { get; }
+        public bool list { get; }
+        
+        public ImmutableDictionary<string, string> attributes { get; }
+        public Property(string name, string type, bool list, ImmutableDictionary<string, string> attributes)
+        {
+            this.name = name;
+            this.type = type;
+            this.list = list;
+            this.attributes = attributes;
+        }
     }
 
     public class Object
     {
-        public string name { get; set; }
-        public List<Property> properties { get; set; } = new List<Property>();
-        public Dictionary<string, string> attributes { get; set; } = new Dictionary<string, string>();
+        public string name { get; }
+        public ImmutableList<Property> properties { get; }
+        public ImmutableDictionary<string, string> attributes { get; }
+        public Object(string name, ImmutableList<Property> properties, ImmutableDictionary<string, string> attributes)
+        {
+            this.name = name;
+            this.properties = properties;
+            this.attributes = attributes;
+        }
     }
 
     public class Global
     {
-        public List<Object> objects { get; set; } = new List<Object>();
+        public ImmutableList<Object> objects { get; set; }
+        public Global(ImmutableList<Object> objects)
+        {
+            this.objects = objects;
+        }
     }
 
     public class Program
@@ -80,12 +99,12 @@ namespace codegen
 
         public class Helper
         {
-            public bool IsSet(Dictionary<string, string> attributes, string name)
+            public bool IsSet(ImmutableDictionary<string, string> attributes, string name)
             {
                 return attributes.ContainsKey(name) && attributes[name].ToLower() == "true";
             }
 
-            public string Get(Dictionary<string, string> attributes, string name, string defaultValue)
+            public string Get(ImmutableDictionary<string, string> attributes, string name, string defaultValue)
             {
                 return attributes.ContainsKey(name) ? attributes[name] : defaultValue;
             }
@@ -99,27 +118,27 @@ namespace codegen
                 set { base.Model = value; }
             }
 
-            public MyCustomizedTemplate(): base()
+            public MyCustomizedTemplate() : base()
             {
                 Helper = new Helper();
             }
             public Helper Helper { get; set; }
         }
 
-        static Dictionary<string, string> getAttributes(ParseTreeNode node, int attributePosition)
+        static ImmutableDictionary<string, string> getAttributes(ParseTreeNode node, int attributePosition)
         {
-            var attributes = new Dictionary<string, string>();
+            var attributes = ImmutableDictionary<string, string>.Empty;
             if (node.ChildNodes[attributePosition].ChildNodes.Count > 0)
             {
-                foreach (var attributeNode in node.ChildNodes[attributePosition].ChildNodes)
+                foreach (var attributeNode in node.ChildNodes[attributePosition].ChildNodes[0].ChildNodes[0].ChildNodes)
                 {
-                    if (attributeNode.ChildNodes.Count == 1)
+                    if (attributeNode.ChildNodes[0].Term.Name == "attribute_flag")
                     {
-                        attributes.Add(attributeNode.ChildNodes[0].Token.Value.ToString(), "true");
+                        attributes = attributes.Add(attributeNode.ChildNodes[0].ChildNodes[0].Token.Value.ToString(), "true");
                     }
                     else
                     {
-                        attributes.Add(attributeNode.ChildNodes[0].Token.Value.ToString(), attributeNode.ChildNodes[1].Token.Value.ToString());
+                        attributes = attributes.Add(attributeNode.ChildNodes[0].ChildNodes[0].Token.Value.ToString(), attributeNode.ChildNodes[0].ChildNodes[1].Token.Value.ToString());
                     }
                 }
             }
@@ -155,27 +174,38 @@ namespace codegen
                         //printAst(parseTree, grammar.dispTree);
                         //Console.ReadLine();
                         //return;
-                        Global global = new Global();
+                        ImmutableList<Object> objectList = ImmutableList<Object>.Empty;
                         foreach (var objectNode in parseTree.Root.ChildNodes)
                         {
-                            var @object = new Object() { name = objectNode.ChildNodes[0].Token.Value.ToString() };
-
-                            @object.attributes = getAttributes(objectNode, 1);
+                            ImmutableDictionary<string, string> attributes = getAttributes(objectNode, 1);
+                            ImmutableList<Property> properties = ImmutableList<Property>.Empty;
 
                             foreach (var propertyNode in objectNode.ChildNodes[2].ChildNodes)
                             {
-                                var p = new Property()
+                                string type;
+                                bool list = false;
+                                if (propertyNode.ChildNodes[1].ChildNodes[0].Term.Name == "list")
                                 {
-                                    name = propertyNode.ChildNodes[0].Token.Value.ToString(),
-                                    type = propertyNode.ChildNodes[1].Token.Value.ToString()
-                                };
+                                    list = true;
+                                    type = propertyNode.ChildNodes[1].ChildNodes[0].ChildNodes[0].Token.Value.ToString();
+                                }
+                                else
+                                {
+                                    type = propertyNode.ChildNodes[1].ChildNodes[0].Token.Value.ToString();
+                                }
+                                var p = new Property(
+                                    propertyNode.ChildNodes[0].Token.Value.ToString(),
+                                    type,
+                                    list,
+                                    getAttributes(propertyNode, 2)
+                                );
 
-                                p.attributes = getAttributes(propertyNode, 2);
-                                @object.properties.Add(p);
+                                properties = properties.Add(p);
                             }
 
-                            global.objects.Add(@object);
+                            objectList = objectList.Add(new Object(objectNode.ChildNodes[0].Token.Value.ToString(), properties, attributes));
                         }
+                        Global global = new Global(objectList);
 
                         var config = new RazorEngine.Configuration.TemplateServiceConfiguration();
                         config.DisableTempFileLocking = true;

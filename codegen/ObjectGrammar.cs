@@ -5,37 +5,52 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace codegen
+namespace m2svcgen
 {
-    class ObjectGrammar: Grammar
+    class ObjectGrammar : Grammar
     {
-        public ObjectGrammar(): base(false)
+        public ObjectGrammar() : base(false)
         {
-            var identifier = new RegexBasedTerminal("[a-zA-Z][a-zA-Z0-9_]*");
-            var value = new RegexBasedTerminal("[a-zA-Z0-9_]+");
+            //var identifier = new RegexBasedTerminal("identifier", "[a-zA-Z][a-zA-Z0-9_]*", "list");
+            var identifier = new RegexBasedTerminal("identifier", @"\b((?!list)[a-zA-Z0-9_])+\b");
+            var value = new RegexBasedTerminal("name", @"\b[a-zA-Z0-9_]+\b");
 
             var @object = new NonTerminal("object");
             var objectList = new NonTerminal("objectList");
             var properties = new NonTerminal("properties");
             var property = new NonTerminal("property");
+            var attributeList_opt = new NonTerminal("attributeList_opt");
+            var attributeList = new NonTerminal("attributeList");
             var attributes = new NonTerminal("attributes");
             var attribute = new NonTerminal("attribute");
+            var attribute_value = new NonTerminal("attribute_value");
+            var attribute_flag = new NonTerminal("attribute_flag");
+            var type = new NonTerminal("type");
+            var list = new NonTerminal("list");
             var comma = ToTerm(",", "comma");
 
-            attribute.Rule = (identifier + "=" + value) | identifier;
-            attributes.Rule = MakeStarRule(attributes, comma, attribute) ;
+            attribute_value.Rule = identifier + "=" + value;
+            attribute_flag.Rule = identifier;
+            attribute.Rule = attribute_value | attribute_flag;
+            attributes.Rule = MakePlusRule(attributes, comma, attribute);
 
-            property.Rule = identifier + ":" + identifier + attributes;
+            attributeList.Rule = "[" + attributes + "]";
+            attributeList_opt.Rule = Empty | attributeList;
+
+            list.Rule = "List" + identifier;
+            type.Rule = identifier | list;
+
+            property.Rule = identifier + ":" + type + attributeList_opt;
 
             properties.Rule = MakePlusRule(properties, property);
 
-            @object.Rule = identifier + attributes + "{" + properties + "}";
+            @object.Rule = identifier + attributeList_opt + "{" + properties + "}";
 
             objectList.Rule = MakePlusRule(objectList, @object);
 
             Root = objectList;
 
-            MarkPunctuation("=", "[", "]", ":", "{", "}", ";");
+            MarkPunctuation("=", "[", "]", ":", "{", "}", ";", "List");
         }
 
         public bool isValid(string sourceCode, Grammar grammar)

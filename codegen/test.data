@@ -1,8 +1,3 @@
-﻿SomeObject interfaced {
-	SomeValue: String name=some_value
-}
-
-
-SomeObject SomeObjectAttribute=abc, SomeObjectFlag {
-	SomeValue: String SomePropertyAttribute=abc, SomePropertyFlag
+﻿SomeObject [interfaced] {
+	SomeValue: String [name=some_value]
 }
