@@ -1,8 +1,4 @@
-@if(@Helper.IsSet(Model.Attributes, "interfaced")) {
-    @:T@(Model.Name) = class(TInterfacedObject, IIsSerializable, I@(Model.Name))
-} else {
-    @:T@(Model.Name) = class(TInterfacedObject, IIsSerializable)
-}
+    T@(Model.Name) = class(TInterfacedObject, IIsSerializable)
     strict private
 
     strict private
@@ -16,17 +12,20 @@
 
 		end;
 
-    strict private
-
     public
     @foreach(var p in Model.Properties) {
-        if(Helper.IsSet(Model.Attributes, "list")) {
-            @Include("declaration.property.list", p)
+
+        if(p.List) {
+        @:@p.Name: TList<@p.Type>;
         } else {
-            @Include("declaration.property", p)
+        @:@p.Name: @p.Type;
         }
     }
 
+    @if(@Extensions.HasObjectType(Model)) {
+        @:constructor Create();
+        @:destructor Destroy(); override;
+    }
 
         function Serialize(out value: string): Cardinal; overload;
         function Deserialize(const value: string): Cardinal; overload;
@@ -35,3 +34,4 @@
         function Deserialize(const value: TJSONValue): Cardinal; overload;
 
 end;
+

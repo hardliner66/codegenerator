@@ -163,6 +163,26 @@ namespace Codegen
             return attributes;
         }
 
+        static ImmutableDictionary<string, string> getAttributesForProperty(ParseTreeNode node, int attributePosition)
+        {
+            var attributes = ImmutableDictionary<string, string>.Empty;
+            if (node.ChildNodes[attributePosition].ChildNodes.Count > 0)
+            {
+                foreach (var attributeNode in node.ChildNodes[attributePosition].ChildNodes[0].ChildNodes[0].ChildNodes)
+                {
+                    if (attributeNode.ChildNodes[0].Term.Name == "attribute_flag")
+                    {
+                        attributes = attributes.Add(attributeNode.ChildNodes[0].ChildNodes[0].Token.Value.ToString(), "true");
+                    }
+                    else
+                    {
+                        attributes = attributes.Add(attributeNode.ChildNodes[0].ChildNodes[0].Token.Value.ToString(), attributeNode.ChildNodes[0].ChildNodes[1].ChildNodes[0].Token.Value.ToString());
+                    }
+                }
+            }
+            return attributes;
+        }
+
         static string getDefaultValue(ParseTreeNode node)
         {
             string default_value = "";
@@ -264,7 +284,7 @@ namespace Codegen
                             objectList = objectList.Add(new Object(objectNode.ChildNodes[0].Token.Value.ToString(), properties, attributes));
                         }
                         Global global = new Global(objectList, System.IO.Path.GetFileNameWithoutExtension(options.DataFile));
-
+                        
                         string path = options.TemplateDir;
 
                         var config = new RazorEngine.Configuration.TemplateServiceConfiguration();
@@ -280,7 +300,9 @@ namespace Codegen
                             CompilerParameters parameters = new CompilerParameters();
                             
                             parameters.ReferencedAssemblies.Add(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "RazorEngine.dll"));
+                            parameters.ReferencedAssemblies.Add(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "System.Collections.Immutable.dll"));
                             parameters.ReferencedAssemblies.Add(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "codegen.exe"));
+                            parameters.ReferencedAssemblies.Add("System.Runtime.dll");
                             // True - memory generation, false - external file generation
                             parameters.GenerateInMemory = true;
                             // True - exe file generation, false - dll file generation

@@ -1,6 +1,8 @@
 @if (@Helper.IsSet(Model.Attributes, "interfaced")) {
 @Include("declaration.interface", Model)
-}
 
-
+@Include("declaration.object.interfaced", Model)
+} else {
 @Include("declaration.object", Model)
+
+}

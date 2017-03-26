@@ -1,6 +1,16 @@
     I@(Model.Name) = interface(IIsSerializable)
     @foreach(var p in Model.Properties) {
-        @Include("declaration.property", p)
+        if(p.List) {
+        @:function Get@(p.Name): TList<@p.Type>;
+        @:procedure Set@(p.Name)(const value: TList<@p.Type>);
+        @:property @p.Name: TList<@p.Type> read Get@(p.Name) write Set@(p.Name);
+        } else {
+        @:function Get@(p.Name): @p.Type;
+        @:procedure Set@(p.Name)(const value: @p.Type);
+        @:property @p.Name: @p.Type read Get@(p.Name) write Set@(p.Name);
+        }
+<text>
+</text>
     }
-
     end;
+

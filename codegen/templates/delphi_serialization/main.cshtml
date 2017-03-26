@@ -22,14 +22,14 @@ type
 
 implementation
 
-@foreach (var o in Model.Objects)
-{
-    @Include("implementation", o)
-}
-
 uses
 	System.SysUtils,
 	m2.Common.JsonHelper,
 	m2.Common.Memory;
+
+@foreach (var o in Model.Objects)
+{
+    @Include("implementation", o)
+}
 
 end.
