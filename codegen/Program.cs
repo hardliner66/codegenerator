@@ -7,16 +7,14 @@ using System.Threading.Tasks;
 using Irony.Parsing;
 using RazorEngine;
 using RazorEngine.Templating; // For extension methods.
-using System.Runtime.Serialization;
 using CommandLine;
 using CommandLine.Text;
-using System.Dynamic;
-using System.CodeDom.Compiler;
-using Microsoft.CSharp;
 using System.Reflection;
 using System.Security.Policy;
 using System.Security;
 using System.Security.Permissions;
+using System.IO;
+using CSScriptLibrary;
 
 namespace Codegen
 {
@@ -235,6 +233,14 @@ namespace Codegen
             return true;
         }
 
+        static Assembly CompileHelper(string path, string asmPath)
+        {
+            CSScript.ShareHostRefAssemblies = true;
+            CSScript.CompileCode(File.ReadAllText(path), asmPath, false);
+
+            return Assembly.LoadFrom(asmPath);
+        }
+
         static void Main(string[] args)
         {
             if (AppDomain.CurrentDomain.IsDefaultAppDomain())
@@ -321,39 +327,11 @@ namespace Codegen
 
 
 
-                            if (System.IO.File.Exists(System.IO.Path.Combine(path, "helper.cs")))
-                            {
-                                CSharpCodeProvider provider = new CSharpCodeProvider();
-                                CompilerParameters parameters = new CompilerParameters();
+                            if (File.Exists(Path.Combine(path, "helper.cs")))
+                            {                                
+                                Assembly assembly = CompileHelper(Path.Combine(path, "helper.cs"), options.TempDll);
 
-                                parameters.ReferencedAssemblies.Add(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "RazorEngine.dll"));
-                                parameters.ReferencedAssemblies.Add(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "System.Collections.Immutable.dll"));
-                                parameters.ReferencedAssemblies.Add(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "codegen.exe"));
-                                parameters.ReferencedAssemblies.Add("System.Runtime.dll");
-                                // True - memory generation, false - external file generation
-                                parameters.GenerateInMemory = true;
-                                // True - exe file generation, false - dll file generation
-                                parameters.GenerateExecutable = false;
-
-                                parameters.OutputAssembly = options.TempDll; // ;
-
-                                CompilerResults results = provider.CompileAssemblyFromSource(parameters, System.IO.File.ReadAllText(System.IO.Path.Combine(path, "helper.cs")));
-                                if (results.Errors.HasErrors)
-                                {
-                                    StringBuilder sb = new StringBuilder();
-
-                                    foreach (CompilerError error in results.Errors)
-                                    {
-                                        sb.AppendLine(String.Format("Error ({0}): {1}", error.ErrorNumber, error.ErrorText));
-                                    }
-
-                                    throw new InvalidOperationException(sb.ToString());
-                                }
-                                Assembly assembly = results.CompiledAssembly;
-                                Type program = assembly.GetType("Codegen.Template`1");
-
-                                Assembly.LoadFrom(options.TempDll);
-                                config.BaseTemplateType = program;
+                                config.BaseTemplateType = assembly.GetType("Codegen.Template`1");
                             }
                             else
                             {
@@ -374,7 +352,7 @@ namespace Codegen
                                 }
                             }
 
-                            service.Compile(System.IO.File.ReadAllText(System.IO.Path.Combine(path, "main.cshtml")), "main", null);
+                            service.Compile(File.ReadAllText(Path.Combine(path, "main.cshtml")), "main", null);
 
                             var result = service.Run("main", null, global);
 
