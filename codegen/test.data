@@ -1,21 +1,23 @@
-﻿DisabledRisError [interfaced] {
+﻿object DisabledRisError [interfaced] {
 	Errorcode: String [name=error_code]
 
 	DisabledUntil: int64 [name=disabled_until]
 }
 
-DisabledRisErrorList [interfaced] {
+object DisabledRisErrorList [interfaced] {
 	Errors: List DisabledRisError [name=errors]
 }
 
-GetRisConfigurationResponseList [interfaced, list=DisabledRisError] {
+object GetRisConfigurationResponseList [interfaced, list=DisabledRisError] {
 	NONE:NONE
 }
 
-SomeObject [interfaced] {
+object SomeObject [interfaced] {
 	SomeValue: String = 2000 [name=some_value]
 	SomeOtherValue: List String = 2000 [name=some_other_value]
 
 
 	SomeQuotedValue: List String [name="some other value"]
 }
+
+external SomeType

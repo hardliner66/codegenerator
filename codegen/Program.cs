@@ -193,6 +193,48 @@ namespace Codegen
             return default_value;
         }
 
+        static Object parseObjectNode(ParseTreeNode node)
+        {
+
+            ImmutableDictionary<string, string> attributes = getAttributes(node, 1);
+            ImmutableList<Property> properties = ImmutableList<Property>.Empty;
+
+            foreach (var propertyNode in node.ChildNodes[2].ChildNodes)
+            {
+                string type;
+                bool list = false;
+                if (propertyNode.ChildNodes[1].ChildNodes[0].Term.Name == "list")
+                {
+                    list = true;
+                    type = propertyNode.ChildNodes[1].ChildNodes[0].ChildNodes[0].Token.Value.ToString();
+                }
+                else
+                {
+                    type = propertyNode.ChildNodes[1].ChildNodes[0].Token.Value.ToString();
+                }
+                var p = new Property(
+                    propertyNode.ChildNodes[0].Token.Value.ToString(),
+                    type,
+                    list,
+                    getAttributes(propertyNode, 3),
+                    getDefaultValue(propertyNode)
+                );
+
+                properties = properties.Add(p);
+            }
+            return new Object(node.ChildNodes[0].Token.Value.ToString(), properties, attributes);
+        }
+
+        static string parseExternal(ParseTreeNode node)
+        {
+            return node.ChildNodes[0].Token.Value.ToString();
+        }
+
+        static bool validate(Global global, ImmutableList<string> externals)
+        {
+            return true;
+        }
+
         static void Main(string[] args)
         {
             if (AppDomain.CurrentDomain.IsDefaultAppDomain())
@@ -252,111 +294,101 @@ namespace Codegen
                         //Console.ReadLine();
                         //return;
                         ImmutableList<Object> objectList = ImmutableList<Object>.Empty;
-                        foreach (var objectNode in parseTree.Root.ChildNodes)
+                        ImmutableList<string> externalList = ImmutableList<string>.Empty;
+                        foreach (var node in parseTree.Root.ChildNodes)
                         {
-                            ImmutableDictionary<string, string> attributes = getAttributes(objectNode, 1);
-                            ImmutableList<Property> properties = ImmutableList<Property>.Empty;
-
-                            foreach (var propertyNode in objectNode.ChildNodes[2].ChildNodes)
+                            if (node.ChildNodes[0].Term.Name == "object")
                             {
-                                string type;
-                                bool list = false;
-                                if (propertyNode.ChildNodes[1].ChildNodes[0].Term.Name == "list")
-                                {
-                                    list = true;
-                                    type = propertyNode.ChildNodes[1].ChildNodes[0].ChildNodes[0].Token.Value.ToString();
-                                }
-                                else
-                                {
-                                    type = propertyNode.ChildNodes[1].ChildNodes[0].Token.Value.ToString();
-                                }
-                                var p = new Property(
-                                    propertyNode.ChildNodes[0].Token.Value.ToString(),
-                                    type,
-                                    list,
-                                    getAttributes(propertyNode, 3),
-                                    getDefaultValue(propertyNode)
-                                );
-
-                                properties = properties.Add(p);
+                                objectList = objectList.Add(parseObjectNode(node.ChildNodes[0]));
                             }
-
-                            objectList = objectList.Add(new Object(objectNode.ChildNodes[0].Token.Value.ToString(), properties, attributes));
+                            else
+                            {
+                                externalList = externalList.Add(parseExternal(node.ChildNodes[0]));
+                            }
                         }
                         Global global = new Global(objectList, System.IO.Path.GetFileNameWithoutExtension(options.DataFile));
-                        
-                        string path = options.TemplateDir;
 
-                        var config = new RazorEngine.Configuration.TemplateServiceConfiguration();
-                        config.DisableTempFileLocking = true;
-                        config.EncodedStringFactory = new RazorEngine.Text.RawStringFactory();
-                        config.CachingProvider = new DefaultCachingProvider(t => { });
-
-
-
-                        if (System.IO.File.Exists(System.IO.Path.Combine(path, "helper.cs")))
+                        if (validate(global, externalList))
                         {
-                            CSharpCodeProvider provider = new CSharpCodeProvider();
-                            CompilerParameters parameters = new CompilerParameters();
-                            
-                            parameters.ReferencedAssemblies.Add(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "RazorEngine.dll"));
-                            parameters.ReferencedAssemblies.Add(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "System.Collections.Immutable.dll"));
-                            parameters.ReferencedAssemblies.Add(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "codegen.exe"));
-                            parameters.ReferencedAssemblies.Add("System.Runtime.dll");
-                            // True - memory generation, false - external file generation
-                            parameters.GenerateInMemory = true;
-                            // True - exe file generation, false - dll file generation
-                            parameters.GenerateExecutable = false;
 
-                            parameters.OutputAssembly = options.TempDll; // ;
 
-                            CompilerResults results = provider.CompileAssemblyFromSource(parameters, System.IO.File.ReadAllText(System.IO.Path.Combine(path, "helper.cs")));
-                            if (results.Errors.HasErrors)
+                            string path = options.TemplateDir;
+
+                            var config = new RazorEngine.Configuration.TemplateServiceConfiguration();
+                            config.DisableTempFileLocking = true;
+                            config.EncodedStringFactory = new RazorEngine.Text.RawStringFactory();
+                            config.CachingProvider = new DefaultCachingProvider(t => { });
+
+
+
+                            if (System.IO.File.Exists(System.IO.Path.Combine(path, "helper.cs")))
                             {
-                                StringBuilder sb = new StringBuilder();
+                                CSharpCodeProvider provider = new CSharpCodeProvider();
+                                CompilerParameters parameters = new CompilerParameters();
 
-                                foreach (CompilerError error in results.Errors)
+                                parameters.ReferencedAssemblies.Add(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "RazorEngine.dll"));
+                                parameters.ReferencedAssemblies.Add(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "System.Collections.Immutable.dll"));
+                                parameters.ReferencedAssemblies.Add(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "codegen.exe"));
+                                parameters.ReferencedAssemblies.Add("System.Runtime.dll");
+                                // True - memory generation, false - external file generation
+                                parameters.GenerateInMemory = true;
+                                // True - exe file generation, false - dll file generation
+                                parameters.GenerateExecutable = false;
+
+                                parameters.OutputAssembly = options.TempDll; // ;
+
+                                CompilerResults results = provider.CompileAssemblyFromSource(parameters, System.IO.File.ReadAllText(System.IO.Path.Combine(path, "helper.cs")));
+                                if (results.Errors.HasErrors)
                                 {
-                                    sb.AppendLine(String.Format("Error ({0}): {1}", error.ErrorNumber, error.ErrorText));
-                                }
+                                    StringBuilder sb = new StringBuilder();
 
-                                throw new InvalidOperationException(sb.ToString());
+                                    foreach (CompilerError error in results.Errors)
+                                    {
+                                        sb.AppendLine(String.Format("Error ({0}): {1}", error.ErrorNumber, error.ErrorText));
+                                    }
+
+                                    throw new InvalidOperationException(sb.ToString());
+                                }
+                                Assembly assembly = results.CompiledAssembly;
+                                Type program = assembly.GetType("Codegen.Template`1");
+
+                                Assembly.LoadFrom(options.TempDll);
+                                config.BaseTemplateType = program;
                             }
-                            Assembly assembly = results.CompiledAssembly;
-                            Type program = assembly.GetType("Codegen.Template`1");
-                            
-                            Assembly.LoadFrom(options.TempDll);
-                            config.BaseTemplateType = program;
+                            else
+                            {
+                                config.BaseTemplateType = typeof(CustomizedTemplate<>);
+                            }
+
+                            var service = RazorEngineService.Create(config);
+
+                            foreach (var f in System.IO.Directory.EnumerateFiles(path, "*.cshtml"))
+                            {
+                                string template = System.IO.File.ReadAllText(f);
+
+                                var name = System.IO.Path.GetFileNameWithoutExtension(f);
+
+                                if (name.ToLower() != "main")
+                                {
+                                    service.AddTemplate(name, template);
+                                }
+                            }
+
+                            service.Compile(System.IO.File.ReadAllText(System.IO.Path.Combine(path, "main.cshtml")), "main", null);
+
+                            var result = service.Run("main", null, global);
+
+                            if (options.OutputFile == DEFAULT_OUTPUT)
+                            {
+                                Console.WriteLine(result);
+                            }
+                            else
+                            {
+                                System.IO.File.WriteAllText(options.OutputFile, result, System.Text.Encoding.UTF8);
+                            }
                         } else
                         {
-                            config.BaseTemplateType = typeof(CustomizedTemplate<>);
-                        }
-
-                        var service = RazorEngineService.Create(config);
-                        
-                        foreach (var f in System.IO.Directory.EnumerateFiles(path, "*.cshtml"))
-                        {
-                            string template = System.IO.File.ReadAllText(f);
-
-                            var name = System.IO.Path.GetFileNameWithoutExtension(f);
-
-                            if (name.ToLower() != "main") 
-                            {
-                                service.AddTemplate(name, template);
-                            }
-                        }
-
-                        service.Compile(System.IO.File.ReadAllText(System.IO.Path.Combine(path, "main.cshtml")), "main", null);
-
-                        var result = service.Run("main", null, global);
-
-                        if (options.OutputFile == DEFAULT_OUTPUT)
-                        {
-                            Console.WriteLine(result);
-                        }
-                        else
-                        {
-                            System.IO.File.WriteAllText(options.OutputFile, result, System.Text.Encoding.UTF8);
+                            Console.WriteLine("Validation Failed!");
                         }
                     }
                 }

@@ -17,6 +17,9 @@ namespace Codegen
             var value = new RegexBasedTerminal("name", @"\b[a-zA-Z0-9_]+\b");
             var str = new QuotedValueLiteral("value", "\"", TypeCode.String);
 
+            var external = new NonTerminal("external");
+            var line = new NonTerminal("line");
+
             var @object = new NonTerminal("object");
             var objectList = new NonTerminal("objectList");
             var properties = new NonTerminal("properties");
@@ -33,6 +36,10 @@ namespace Codegen
             var type = new NonTerminal("type");
             var list = new NonTerminal("list");
             var comma = ToTerm(",", "comma");
+
+            external.Rule = ToTerm("external") + identifier;
+
+            line.Rule = external | @object;
 
             attribute_value.Rule = value | str;
 
@@ -54,13 +61,13 @@ namespace Codegen
 
             properties.Rule = MakePlusRule(properties, property);
 
-            @object.Rule = identifier + attributeList_opt + "{" + properties + "}";
+            @object.Rule = ToTerm("object") + identifier + attributeList_opt + "{" + properties + "}";
 
-            objectList.Rule = MakePlusRule(objectList, @object);
+            objectList.Rule = MakePlusRule(objectList, line);
 
             Root = objectList;
 
-            MarkPunctuation("=", "[", "]", ":", "{", "}", ";", "List");
+            MarkPunctuation("=", "[", "]", ":", "{", "}", ";", "list", "object", "external");
         }
 
         public bool isValid(string sourceCode, Grammar grammar)
