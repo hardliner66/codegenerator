@@ -15,6 +15,7 @@ using System.Security;
 using System.Security.Permissions;
 using System.IO;
 using CSScriptLibrary;
+using Newtonsoft.Json;
 
 namespace Codegen
 {
@@ -91,10 +92,35 @@ namespace Codegen
         }
     }
 
+    public class ParserConfig
+    {
+        public List<string> Primitives = new List<string> { "char", "string", "bool", "int", "double", "float", "int32", "int64" };
+        public Dictionary<string, string> PrimitiveMapping = new Dictionary<string, string> { };
+    }
+
     public class Program
     {
         const string DEFAULT_OUTPUT = "<stdout>";
         public static string FileNameInternal { get; set; }
+
+        public static ParserConfig parserConfig = new ParserConfig();
+
+        public static ParserConfig readParserConfig(string path)
+        {
+            var config = JsonConvert.DeserializeObject<ParserConfig>(File.ReadAllText(path));
+
+            config.Primitives = config.Primitives.Select(x => x.ToLower()).ToList();
+
+            var mapping = new Dictionary<string, string>();
+            foreach(var kv in config.PrimitiveMapping)
+            {
+                mapping.Add(kv.Key.ToLower(), kv.Value);
+            }
+
+            config.PrimitiveMapping = mapping; 
+
+            return config;
+        }
 
         class Options
         {
@@ -105,6 +131,10 @@ namespace Codegen
             [Option('t', "template-dir", Required = true,
               HelpText = "Template Directory. (This directory should contain main.cshtml)")]
             public string TemplateDir { get; set; }
+
+            [Option('u', "untyped", Required = false,
+              HelpText = "Don't validate types")]
+            public bool Untyped { get; set; }
 
             [Option('o', "out", DefaultValue = DEFAULT_OUTPUT,
               HelpText = "Out file.")]
@@ -210,6 +240,10 @@ namespace Codegen
                 {
                     type = propertyNode.ChildNodes[1].ChildNodes[0].Token.Value.ToString();
                 }
+                if(parserConfig.PrimitiveMapping.ContainsKey(type.ToLower()))
+                {
+                    type = parserConfig.PrimitiveMapping[type.ToLower()];
+                }
                 var p = new Property(
                     propertyNode.ChildNodes[0].Token.Value.ToString(),
                     type,
@@ -228,8 +262,36 @@ namespace Codegen
             return node.ChildNodes[0].Token.Value.ToString();
         }
 
-        static bool validate(Global global, ImmutableList<string> externals)
+        static bool validate(Global global, ImmutableList<string> externals, bool shouldValidate)
         {
+            if (shouldValidate)
+            {
+                List<string> types = new List<string>();
+                foreach (var o in global.Objects)
+                {
+                    if (types.Contains(o.Name.ToLower()))
+                    {
+                        Console.WriteLine($"Duplicate Type: {o.Name}");
+                        return false;
+                    }
+                    else
+                    {
+                        types.Add(o.Name.ToLower());
+                    }
+                }
+
+                foreach (var o in global.Objects)
+                {
+                    foreach (var p in o.Properties)
+                    {
+                        if (!types.Contains(p.Type.ToLower()) && !externals.Any(x => x.ToLower() == p.Type.ToLower()) && !parserConfig.Primitives.Contains(p.Type.ToLower()))
+                        {
+                            Console.WriteLine($"Type not defined for Property: {o.Name}.{p.Name}: {p.Type}");
+                            return false;
+                        }
+                    }
+                }
+            }
             return true;
         }
 
@@ -313,22 +375,26 @@ namespace Codegen
                             }
                         }
                         Global global = new Global(objectList, System.IO.Path.GetFileNameWithoutExtension(options.DataFile));
+                        string path = options.TemplateDir;
 
-                        if (validate(global, externalList))
+                        if (File.Exists(Path.Combine(path, "config.json")))
                         {
+                            parserConfig = readParserConfig(Path.Combine(path, "config.json"));
+                        }
+                        else if (File.Exists("config.json"))
+                        {
+                            parserConfig = readParserConfig("config.json");
+                        }
 
-
-                            string path = options.TemplateDir;
-
+                        if (validate(global, externalList, !options.Untyped))
+                        {
                             var config = new RazorEngine.Configuration.TemplateServiceConfiguration();
                             config.DisableTempFileLocking = true;
                             config.EncodedStringFactory = new RazorEngine.Text.RawStringFactory();
                             config.CachingProvider = new DefaultCachingProvider(t => { });
 
-
-
                             if (File.Exists(Path.Combine(path, "helper.cs")))
-                            {                                
+                            {
                                 Assembly assembly = CompileHelper(Path.Combine(path, "helper.cs"), options.TempDll);
 
                                 config.BaseTemplateType = assembly.GetType("Codegen.Template`1");
@@ -364,7 +430,8 @@ namespace Codegen
                             {
                                 System.IO.File.WriteAllText(options.OutputFile, result, System.Text.Encoding.UTF8);
                             }
-                        } else
+                        }
+                        else
                         {
                             Console.WriteLine("Validation Failed!");
                         }

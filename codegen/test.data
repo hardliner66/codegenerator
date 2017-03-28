@@ -20,4 +20,4 @@ object SomeObject [interfaced] {
 	SomeQuotedValue: List String [name="some other value"]
 }
 
-external SomeType
+external NONE

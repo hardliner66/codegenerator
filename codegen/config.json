@@ -1,0 +1,10 @@
+﻿{
+  "Primitives": [
+    "char",
+    "string",
+    "bool",
+    "int",
+    "double",
+    "float"
+  ]
+}
