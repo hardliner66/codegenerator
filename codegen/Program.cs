@@ -95,7 +95,7 @@ namespace Codegen
     public class ParserConfig
     {
         public List<string> Primitives = new List<string> { "char", "string", "bool", "int", "double", "float", "int32", "int64" };
-        public Dictionary<string, string> PrimitiveMapping = new Dictionary<string, string> { };
+        public Dictionary<string, string> TypeMapping = new Dictionary<string, string> { };
     }
 
     public class Program
@@ -112,12 +112,12 @@ namespace Codegen
             config.Primitives = config.Primitives.Select(x => x.ToLower()).ToList();
 
             var mapping = new Dictionary<string, string>();
-            foreach(var kv in config.PrimitiveMapping)
+            foreach(var kv in config.TypeMapping)
             {
                 mapping.Add(kv.Key.ToLower(), kv.Value);
             }
 
-            config.PrimitiveMapping = mapping; 
+            config.TypeMapping = mapping; 
 
             return config;
         }
@@ -240,9 +240,9 @@ namespace Codegen
                 {
                     type = propertyNode.ChildNodes[1].ChildNodes[0].Token.Value.ToString();
                 }
-                if(parserConfig.PrimitiveMapping.ContainsKey(type.ToLower()))
+                if(parserConfig.TypeMapping.ContainsKey(type.ToLower()))
                 {
-                    type = parserConfig.PrimitiveMapping[type.ToLower()];
+                    type = parserConfig.TypeMapping[type.ToLower()];
                 }
                 var p = new Property(
                     propertyNode.ChildNodes[0].Token.Value.ToString(),
@@ -340,6 +340,16 @@ namespace Codegen
             {
                 try
                 {
+                    string path = options.TemplateDir;
+                    if (File.Exists(Path.Combine(path, "config.json")))
+                    {
+                        parserConfig = readParserConfig(Path.Combine(path, "config.json"));
+                    }
+                    else if (File.Exists("config.json"))
+                    {
+                        parserConfig = readParserConfig("config.json");
+                    }
+
                     var grammar = new ObjectGrammar();
                     Console.Clear();
                     //var language = new LanguageData(grammar);
@@ -375,16 +385,6 @@ namespace Codegen
                             }
                         }
                         Global global = new Global(objectList, System.IO.Path.GetFileNameWithoutExtension(options.DataFile));
-                        string path = options.TemplateDir;
-
-                        if (File.Exists(Path.Combine(path, "config.json")))
-                        {
-                            parserConfig = readParserConfig(Path.Combine(path, "config.json"));
-                        }
-                        else if (File.Exists("config.json"))
-                        {
-                            parserConfig = readParserConfig("config.json");
-                        }
 
                         if (validate(global, externalList, !options.Untyped))
                         {

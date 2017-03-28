@@ -1,0 +1,14 @@
+﻿{
+  "Primitives": [
+    "char",
+    "string",
+    "boolean",
+    "integer",
+    "double",
+    "float"
+  ],
+  "TypeMapping": {
+      "bool": "Boolean",
+      "int": "Integer"
+  }
+}

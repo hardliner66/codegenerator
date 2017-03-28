@@ -146,9 +146,9 @@ end;    ISomeObject = interface(IIsSerializable)
         property SomeValue: String read GetSomeValue write SetSomeValue;
 
 
-        function GetSomeOtherValue: TList<String>;
-        procedure SetSomeOtherValue(const value: TList<String>);
-        property SomeOtherValue: TList<String> read GetSomeOtherValue write SetSomeOtherValue;
+        function GetSomeOtherValue: TList<Boolean>;
+        procedure SetSomeOtherValue(const value: TList<Boolean>);
+        property SomeOtherValue: TList<Boolean> read GetSomeOtherValue write SetSomeOtherValue;
 
 
         function GetSomeQuotedValue: TList<String>;
@@ -181,9 +181,9 @@ end;    ISomeObject = interface(IIsSerializable)
         property SomeValue: String read GetSomeValue write SetSomeValue;
 
 
-        function GetSomeOtherValue: TList<String>;
-        procedure SetSomeOtherValue(const value: TList<String>);
-        property SomeOtherValue: TList<String> read GetSomeOtherValue write SetSomeOtherValue;
+        function GetSomeOtherValue: TList<Boolean>;
+        procedure SetSomeOtherValue(const value: TList<Boolean>);
+        property SomeOtherValue: TList<Boolean> read GetSomeOtherValue write SetSomeOtherValue;
 
 
         function GetSomeQuotedValue: TList<String>;

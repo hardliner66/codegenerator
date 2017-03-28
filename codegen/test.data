@@ -14,7 +14,7 @@ object GetRisConfigurationResponseList [interfaced, list=DisabledRisError] {
 
 object SomeObject [interfaced] {
 	SomeValue: String = 2000 [name=some_value]
-	SomeOtherValue: List String = 2000 [name=some_other_value]
+	SomeOtherValue: List bool = 2000 [name=some_other_value]
 
 
 	SomeQuotedValue: List String [name="some other value"]
