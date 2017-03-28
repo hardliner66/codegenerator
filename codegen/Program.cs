@@ -19,16 +19,36 @@ using Newtonsoft.Json;
 
 namespace Codegen
 {
+    public static class Shared
+    {
+        public static Global Global;
+    }
+
     public class Helper
     {
+        public Global GetModel()
+        {
+            return Shared.Global;
+        }
+
         public bool IsSet(ImmutableDictionary<string, string> attributes, string name)
         {
             return attributes.ContainsKey(name) && attributes[name].ToLower() == "true";
         }
 
-        public string Get(ImmutableDictionary<string, string> attributes, string name, string defaultValue)
+        public T Get<T>(ImmutableDictionary<string, string> attributes, string name, T defaultValue)
         {
-            return attributes.ContainsKey(name) ? attributes[name] : defaultValue;
+            if (attributes.ContainsKey(name))
+            {
+                try
+                {
+                    return (T)Convert.ChangeType(attributes[name], typeof(T));
+                }
+                catch
+                {
+                }
+            }
+            return defaultValue;
         }
 
         //public string FileName { get { return FileNameInternal; } set { FileNameInternal = value; } }
@@ -50,45 +70,62 @@ namespace Codegen
 
         Dictionary<string, dynamic> Functions { get; set; } = new Dictionary<string, dynamic>();
     }
-    public class Property
+
+    public class ObjectWithAttributes
+    {
+        public ImmutableDictionary<string, string> Attributes { get; }
+        public ObjectWithAttributes(ImmutableDictionary<string, string> attributes)
+        {
+            Attributes = attributes;
+        }
+    }
+
+    public class Property : ObjectWithAttributes
     {
         public string Name { get; }
         public string Type { get; }
         public bool List { get; }
         public string Default { get; }
 
-        public ImmutableDictionary<string, string> Attributes { get; }
-        public Property(string name, string type, bool list, ImmutableDictionary<string, string> attributes, string default_value)
+        public Property(string name, string type, bool list, ImmutableDictionary<string, string> attributes, string default_value) : base(attributes)
         {
             Name = name;
             Type = type;
             List = list;
-            Attributes = attributes;
             Default = default_value;
         }
     }
 
-    public class Object
+    public class Object : ObjectWithAttributes
     {
         public string Name { get; }
         public ImmutableList<Property> Properties { get; }
-        public ImmutableDictionary<string, string> Attributes { get; }
-        public Object(string name, ImmutableList<Property> properties, ImmutableDictionary<string, string> attributes)
+        public Object(string name, ImmutableList<Property> properties, ImmutableDictionary<string, string> attributes) : base(attributes)
         {
             Name = name;
             Properties = properties;
-            Attributes = attributes;
+        }
+    }
+
+    public class ExternalType : ObjectWithAttributes
+    {
+        public string Name { get; }
+        public ExternalType(string name, ImmutableDictionary<string, string> attributes) : base(attributes)
+        {
+            Name = name;
         }
     }
 
     public class Global
     {
         public ImmutableList<Object> Objects { get; }
+        public ImmutableList<ExternalType> ExternalTypes { get; }
         public string Namespace { get; }
-        public Global(ImmutableList<Object> objects, string @namespace)
+        public Global(ImmutableList<Object> objects, string @namespace, ImmutableList<ExternalType> externalTypes)
         {
             Objects = objects;
             Namespace = @namespace;
+            ExternalTypes = externalTypes;
         }
     }
 
@@ -101,6 +138,7 @@ namespace Codegen
     public class Program
     {
         const string DEFAULT_OUTPUT = "<stdout>";
+        const string DEFAULT_TEMPLATE = "main";
         public static string FileNameInternal { get; set; }
 
         public static ParserConfig parserConfig = new ParserConfig();
@@ -112,12 +150,12 @@ namespace Codegen
             config.Primitives = config.Primitives.Select(x => x.ToLower()).ToList();
 
             var mapping = new Dictionary<string, string>();
-            foreach(var kv in config.TypeMapping)
+            foreach (var kv in config.TypeMapping)
             {
                 mapping.Add(kv.Key.ToLower(), kv.Value);
             }
 
-            config.TypeMapping = mapping; 
+            config.TypeMapping = mapping;
 
             return config;
         }
@@ -139,6 +177,10 @@ namespace Codegen
             [Option('o', "out", DefaultValue = DEFAULT_OUTPUT,
               HelpText = "Out file.")]
             public string OutputFile { get; set; }
+
+            [Option('b', "base-template", DefaultValue = DEFAULT_TEMPLATE,
+              HelpText = "Out file.")]
+            public string BaseTemplate { get; set; }
 
             [Option('@', Required = false)]
             public string TempDll { get; set; }
@@ -191,26 +233,6 @@ namespace Codegen
             return attributes;
         }
 
-        static ImmutableDictionary<string, string> getAttributesForProperty(ParseTreeNode node, int attributePosition)
-        {
-            var attributes = ImmutableDictionary<string, string>.Empty;
-            if (node.ChildNodes[attributePosition].ChildNodes.Count > 0)
-            {
-                foreach (var attributeNode in node.ChildNodes[attributePosition].ChildNodes[0].ChildNodes[0].ChildNodes)
-                {
-                    if (attributeNode.ChildNodes[0].Term.Name == "attribute_flag")
-                    {
-                        attributes = attributes.Add(attributeNode.ChildNodes[0].ChildNodes[0].Token.Value.ToString(), "true");
-                    }
-                    else
-                    {
-                        attributes = attributes.Add(attributeNode.ChildNodes[0].ChildNodes[0].Token.Value.ToString(), attributeNode.ChildNodes[0].ChildNodes[1].ChildNodes[0].Token.Value.ToString());
-                    }
-                }
-            }
-            return attributes;
-        }
-
         static string getDefaultValue(ParseTreeNode node)
         {
             string default_value = "";
@@ -240,7 +262,7 @@ namespace Codegen
                 {
                     type = propertyNode.ChildNodes[1].ChildNodes[0].Token.Value.ToString();
                 }
-                if(parserConfig.TypeMapping.ContainsKey(type.ToLower()))
+                if (parserConfig.TypeMapping.ContainsKey(type.ToLower()))
                 {
                     type = parserConfig.TypeMapping[type.ToLower()];
                 }
@@ -258,12 +280,12 @@ namespace Codegen
             return new Object(node.ChildNodes[0].Token.Value.ToString(), properties, attributes);
         }
 
-        static string parseExternal(ParseTreeNode node)
+        static ExternalType parseExternal(ParseTreeNode node)
         {
-            return node.ChildNodes[0].Token.Value.ToString();
+            return new ExternalType(node.ChildNodes[0].Token.Value.ToString(), getAttributes(node, 1));
         }
 
-        static bool validate(Global global, ImmutableList<string> externals, bool shouldValidate)
+        static bool validate(Global global, ImmutableList<ExternalType> externals, bool shouldValidate)
         {
             if (shouldValidate)
             {
@@ -285,7 +307,7 @@ namespace Codegen
                 {
                     foreach (var p in o.Properties)
                     {
-                        if (!types.Contains(p.Type.ToLower()) && !externals.Any(x => x.ToLower() == p.Type.ToLower()) && !parserConfig.Primitives.Contains(p.Type.ToLower()))
+                        if (!types.Contains(p.Type.ToLower()) && !externals.Any(x => x.Name.ToLower() == p.Type.ToLower()) && !parserConfig.Primitives.Contains(p.Type.ToLower()))
                         {
                             Console.WriteLine($"Type not defined for Property: {o.Name}.{p.Name}: {p.Type}");
                             return false;
@@ -373,7 +395,7 @@ namespace Codegen
                         //Console.ReadLine();
                         //return;
                         ImmutableList<Object> objectList = ImmutableList<Object>.Empty;
-                        ImmutableList<string> externalList = ImmutableList<string>.Empty;
+                        ImmutableList<ExternalType> externalList = ImmutableList<ExternalType>.Empty;
                         foreach (var node in parseTree.Root.ChildNodes)
                         {
                             if (node.ChildNodes[0].Term.Name == "object")
@@ -385,9 +407,9 @@ namespace Codegen
                                 externalList = externalList.Add(parseExternal(node.ChildNodes[0]));
                             }
                         }
-                        Global global = new Global(objectList, Path.GetFileNameWithoutExtension(options.DataFile));
+                        Shared.Global = new Global(objectList, Path.GetFileNameWithoutExtension(options.DataFile), externalList);
 
-                        if (validate(global, externalList, !options.Untyped))
+                        if (validate(Shared.Global, externalList, !options.Untyped))
                         {
                             var config = new RazorEngine.Configuration.TemplateServiceConfiguration();
                             config.DisableTempFileLocking = true;
@@ -413,15 +435,15 @@ namespace Codegen
 
                                 var name = Path.GetFileNameWithoutExtension(f);
 
-                                if (name.ToLower() != "main")
+                                if (name.ToLower() != options.BaseTemplate)
                                 {
                                     service.AddTemplate(name, template);
                                 }
                             }
 
-                            service.Compile(File.ReadAllText(Path.Combine(path, "main.cshtml")), "main", null);
+                            service.Compile(File.ReadAllText(Path.Combine(path, options.BaseTemplate + ".cshtml")), options.BaseTemplate, null);
 
-                            var result = service.Run("main", null, global);
+                            var result = service.Run(options.BaseTemplate, null, Shared.Global);
 
                             if (options.OutputFile == DEFAULT_OUTPUT)
                             {

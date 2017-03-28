@@ -1,0 +1,37 @@
+function T@(Model.Name).Serialize(out value: string): Cardinal; overload;
+var
+	jsonObject: TJSONValue;
+begin
+	value := '';
+	try
+		Result := Serialize(jsonObject);
+		value := jsonObject.ToJSON();
+	finally
+		TCommonMemory.SafeFreeAndNil(jsonObject);
+	end;
+end;
+
+function T@(Model.Name).Deserialize(const value: string): Cardinal; overload;
+var
+	jsonValue: TJSONValue;
+begin
+	if value.Trim = '' then
+	begin
+		if EMPTY then
+		begin
+			exit(SERIALIZATION_SUCCEEDED);
+		end
+		else
+		begin
+			exit(SERIALIZATION_FAILED);
+		end;
+	end;
+
+	try
+		jsonValue := TJSONObject.ParseJSONValue(value);
+		exit(Deserialize(jsonValue));
+	finally
+		TCommonMemory.SafeFreeAndNil(jsonValue);
+	end;
+end;
+

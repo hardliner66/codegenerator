@@ -2,17 +2,47 @@ namespace Codegen
 {
   public class Extensions
   {
+    Global Model;
+    Helper Helper;
+    public Extensions(Helper helper) {
+      Helper = helper;
+      Model = Helper.GetModel();
+    }
+    public bool IsObjectType(Property p) {
+      return p.List || ToType(p.Type) == "T" + p.Type;
+    }
 
-    public bool HasObjectType(Object o)
+    public bool HasObjectTypeOrList(Object o)
     {
-      foreach(var p in o.Properties) {
-        if (p.List || ToType(p.Type) == "T" + p.Type) {
+      foreach (var p in o.Properties)
+      {
+        if (IsObjectType(p))
+        {
           return true;
         }
       }
       return false;
     }
-    public string ToType(string type)
+
+    public bool NeedsDestructor(Property p)
+    {
+      if (p.List) {
+        return true;
+      }
+      foreach (var o in Model.Objects) {
+        if (p.Type.ToLower() == o.Name.ToLower() && Helper.IsSet(o.Attributes, "interfaced")) {
+          return false;
+        }
+      }
+      foreach (var t in Model.ExternalTypes) {
+        if (p.Type.ToLower() == t.Name.ToLower() && Helper.IsSet(t.Attributes, "interfaced")) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    public string ToType(string type, string prefix = "T")
     {
       string result = type;
       switch (type.ToLower())
@@ -35,11 +65,15 @@ namespace Codegen
         case "int64":
           result = "Int64";
           break;
+        case "int32":
+          result = "Int32";
+          break;
         case "double":
+        case "float":
           result = "Double";
           break;
         default:
-          result = "T" + type;
+          result = prefix + type;
           break;
       }
       return result;
@@ -50,7 +84,7 @@ namespace Codegen
   {
     public Template() : base()
     {
-      Extensions = new Extensions();
+      Extensions = new Extensions(Helper);
     }
 
     public Extensions Extensions { get; set; }

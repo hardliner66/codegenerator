@@ -42,7 +42,7 @@ namespace Codegen
             NonGrammarTerminals.Add(SingleLineComment);
             NonGrammarTerminals.Add(DelimitedComment);
 
-            external.Rule = ToTerm("external") + identifier;
+            external.Rule = ToTerm("external") + identifier + attributeList_opt;
 
             line.Rule = external | @object;
 

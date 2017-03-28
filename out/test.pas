@@ -9,7 +9,9 @@ uses
 
 type
     IInterfacedData = interface;
-    TInterfacedData = class;    TData = class;
+    TInterfacedData = class;
+    TData = class;
+
 
     IInterfacedData = interface(IIsSerializable)
         function GetSomeText1: String;
@@ -37,6 +39,11 @@ type
         property SomeObjectList1: TList<ExternalType> read GetSomeObjectList1 write SetSomeObjectList1;
 
 
+        function GetSomeCrossReference1: Data;
+        procedure SetSomeCrossReference1(const value: Data);
+        property SomeCrossReference1: Data read GetSomeCrossReference1 write SetSomeCrossReference1;
+
+
     end;
 
     TInterfacedData = class(TInterfacedObject, IIsSerializable, IInterfacedData)
@@ -48,10 +55,10 @@ type
             constructor Create(); reintroduce; virtual; abstract; // Prevent anyone from accessing the constructor
         public
             const SomeText1Key = 'some_text';
-            const SomeNumber1Key = 'SomeNumber1';
             const SomeObject1Key = 'SomeObject1';
             const SomePrimitiveList1Key = 'SomePrimitiveList1';
             const SomeObjectList1Key = 'SomeObjectList1';
+            const SomeCrossReference1Key = 'SomeCrossReference1';
 
         end;
 
@@ -79,9 +86,14 @@ type
         procedure SetSomeObjectList1(const value: TList<ExternalType>);
         property SomeObjectList1: TList<ExternalType> read GetSomeObjectList1 write SetSomeObjectList1;
 
+        function GetSomeCrossReference1: Data;
+        procedure SetSomeCrossReference1(const value: Data);
+        property SomeCrossReference1: Data read GetSomeCrossReference1 write SetSomeCrossReference1;
+
 
         constructor Create();
         destructor Destroy(); override;
+
         function Serialize(out value: string): Cardinal; overload;
         function Deserialize(const value: string): Cardinal; overload;
 
@@ -98,20 +110,21 @@ type
         strict private
 			constructor Create(); reintroduce; virtual; abstract; // Prevent anyone from accessing the constructor
 		public
-            const SomeText1Key = 'some_text';
-            const SomeNumber1Key = 'SomeNumber1';
-            const SomeObject1Key = 'SomeObject1';
-            const SomePrimitiveList1Key = 'SomePrimitiveList1';
-            const SomeObjectList1Key = 'SomeObjectList1';
+            const SomeText2Key = 'some_text';
+            const SomeObject2Key = 'SomeObject2';
+            const SomePrimitiveList2Key = 'SomePrimitiveList2';
+            const SomeObjectList2Key = 'SomeObjectList2';
+            const SomeCrossReference2Key = 'SomeCrossReference2';
 
 		end;
 
     public
-        SomeText1: String;
-        SomeNumber1: Int64;
-        SomeObject1: ExternalType;
-        SomePrimitiveList1: TList<Integer>;
-        SomeObjectList1: TList<ExternalType>;
+        SomeText2: String;
+        SomeNumber2: Int64;
+        SomeObject2: ExternalType;
+        SomePrimitiveList2: TList<Integer>;
+        SomeObjectList2: TList<ExternalType>;
+        SomeCrossReference2: InterfacedData;
 
         constructor Create();
         destructor Destroy(); override;
@@ -122,7 +135,7 @@ type
         function Serialize(out value: TJSONValue): Cardinal; overload;
         function Deserialize(const value: TJSONValue): Cardinal; overload;
 
-end;
+    end;
 
 
 
@@ -135,18 +148,83 @@ uses
 
 {InterfacedData}
 
-constructor InterfacedData.Create();
+constructor TInterfacedData.Create();
 begin
-
+	_SomeObject1 := ExternalType.Create();
+	_SomePrimitiveList1 := TList<Integer>.Create();
+	_SomeObjectList1 := TList<ExternalType>.Create();
+	_SomeCrossReference1 := Data.Create();
 end;
 
-destructor InterfacedData.Destroy();
+destructor TInterfacedData.Destroy();
 begin
+	TCommonMemory.SafeFreeAndNil(_SomePrimitiveList1);
+	TCommonMemory.SafeFreeAndNil(_SomeObjectList1);
+	TCommonMemory.SafeFreeAndNil(_SomeCrossReference1);
+end;
 
+function InterfacedData.GetSomeText1: String;
+begin
+	Result := _SomeText1;
+end;
+
+procedure InterfacedData.SetSomeText1(const value: String);
+begin
+	_SomeText1 := value;
+end;
+
+function InterfacedData.GetSomeNumber1: Int64;
+begin
+	Result := _SomeNumber1;
+end;
+
+procedure InterfacedData.SetSomeNumber1(const value: Int64);
+begin
+	_SomeNumber1 := value;
+end;
+
+function InterfacedData.GetSomeObject1: ExternalType;
+begin
+	Result := _SomeObject1;
+end;
+
+procedure InterfacedData.SetSomeObject1(const value: ExternalType);
+begin
+	_SomeObject1 := value;
+end;
+
+function InterfacedData.GetSomePrimitiveList1: Integer;
+begin
+	Result := _SomePrimitiveList1;
+end;
+
+procedure InterfacedData.SetSomePrimitiveList1(const value: Integer);
+begin
+	_SomePrimitiveList1 := value;
+end;
+
+function InterfacedData.GetSomeObjectList1: ExternalType;
+begin
+	Result := _SomeObjectList1;
+end;
+
+procedure InterfacedData.SetSomeObjectList1(const value: ExternalType);
+begin
+	_SomeObjectList1 := value;
+end;
+
+function InterfacedData.GetSomeCrossReference1: Data;
+begin
+	Result := _SomeCrossReference1;
+end;
+
+procedure InterfacedData.SetSomeCrossReference1(const value: Data);
+begin
+	_SomeCrossReference1 := value;
 end;
 
 
-function Serialize(out value: string): Cardinal; overload;
+function TInterfacedData.Serialize(out value: string): Cardinal; overload;
 var
 	jsonObject: TJSONValue;
 begin
@@ -159,7 +237,7 @@ begin
 	end;
 end;
 
-function Deserialize(const value: string): Cardinal; overload;
+function TInterfacedData.Deserialize(const value: string): Cardinal; overload;
 var
 	jsonValue: TJSONValue;
 begin
@@ -181,20 +259,28 @@ begin
 	finally
 		TCommonMemory.SafeFreeAndNil(jsonValue);
 	end;
-end;{Data}
-
-constructor Data.Create();
-begin
-
-end;
-
-destructor Data.Destroy();
-begin
-
 end;
 
 
-function Serialize(out value: string): Cardinal; overload;
+
+{Data}
+
+constructor TData.Create();
+begin
+	SomeObject2 := ExternalType.Create();
+	SomePrimitiveList2 := TList<Integer>.Create();
+	SomeObjectList2 := TList<ExternalType>.Create();
+	SomeCrossReference2 := InterfacedData.Create();
+end;
+
+destructor TData.Destroy();
+begin
+	TCommonMemory.SafeFreeAndNil(SomePrimitiveList2);
+	TCommonMemory.SafeFreeAndNil(SomeObjectList2);
+end;
+
+
+function TData.Serialize(out value: string): Cardinal; overload;
 var
 	jsonObject: TJSONValue;
 begin
@@ -207,7 +293,7 @@ begin
 	end;
 end;
 
-function Deserialize(const value: string): Cardinal; overload;
+function TData.Deserialize(const value: string): Cardinal; overload;
 var
 	jsonValue: TJSONValue;
 begin
@@ -230,4 +316,8 @@ begin
 		TCommonMemory.SafeFreeAndNil(jsonValue);
 	end;
 end;
+
+
+
+
 end.

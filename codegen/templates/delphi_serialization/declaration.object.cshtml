@@ -1,13 +1,15 @@
     T@(Model.Name) = class(TInterfacedObject, IIsSerializable)
     strict private
-
+		const EMPTY: boolean = true;
     strict private
         type KeyConstants = class abstract
         strict private
 			constructor Create(); reintroduce; virtual; abstract; // Prevent anyone from accessing the constructor
 		public
 			@foreach(var p in Model.Properties) {
+                if(!Helper.IsSet(p.Attributes, "ignore")) {
                 @Include("declaration.object.key_constants", p)
+                }
             }
 
 		end;
@@ -22,16 +24,16 @@
         }
     }
 
-    @if(@Extensions.HasObjectType(Model)) {
+    @if(@Extensions.HasObjectTypeOrList(Model)) {
         @:constructor Create();
         @:destructor Destroy(); override;
+<text></text>
     }
-
         function Serialize(out value: string): Cardinal; overload;
         function Deserialize(const value: string): Cardinal; overload;
 
         function Serialize(out value: TJSONValue): Cardinal; overload;
         function Deserialize(const value: TJSONValue): Cardinal; overload;
 
-end;
+    end;
 

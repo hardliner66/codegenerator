@@ -5,16 +5,18 @@ object InterfacedData [interfaced] {
 	SomeObject1: ExternalType           // test object type
 	SomePrimitiveList1: List Int        // test primitive list
 	SomeObjectList1: List ExternalType  // test object list
+	SomeCrossReference1: Data
 }
 
 // Same as above, but without interfaced attribute
 object Data {
-	SomeText1: String [name=some_text]
-	SomeNumber1: Int64 [ignore]
-	SomeObject1: ExternalType
-	SomePrimitiveList1: List Int
-	SomeObjectList1: List ExternalType
+	SomeText2: String [name=some_text]
+	SomeNumber2: Int64 [ignore]
+	SomeObject2: ExternalType
+	SomePrimitiveList2: List Int
+	SomeObjectList2: List ExternalType
+	SomeCrossReference2: InterfacedData
 }
 
 // Types which aren't declared in this file must be declared external
-external ExternalType
+external ExternalType [interfaced]

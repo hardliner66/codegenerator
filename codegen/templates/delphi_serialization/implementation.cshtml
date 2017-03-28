@@ -1,51 +1,32 @@
-{@Model.Name}
+{@Model.Name}@{string prefix = Helper.IsSet(Model.Attributes, "interfaced") ? "_" : "";}
 
-@if(@Extensions.HasObjectType(Model)) {
-<text>constructor @(Model.Name).Create();
+@if(@Extensions.HasObjectTypeOrList(Model)) {
+<text>constructor T@(Model.Name).Create();
 begin
-
+	@foreach(var p in Model.Properties) {
+		if (Extensions.IsObjectType(p)) {
+			if (p.List) {
+	@:@(prefix)@p.Name := TList<@p.Type>.Create();
+			} else {
+	@:@(prefix)@p.Name := @(p.Type).Create();
+			}
+		}
+	}
 end;
 
-destructor @(Model.Name).Destroy();
+destructor T@(Model.Name).Destroy();
 begin
-
+	@foreach(var p in Model.Properties) {
+		if (Extensions.IsObjectType(p) && Extensions.NeedsDestructor(p)) {
+	@:TCommonMemory.SafeFreeAndNil(@(prefix)@(p.Name));
+		}
+	}
 end;</text>
 }
 
+@if(@Helper.IsSet(Model.Attributes, "interfaced")) {
+	@Include("implementation.properties", Model)
+}
 
-function Serialize(out value: string): Cardinal; overload;
-var
-	jsonObject: TJSONValue;
-begin
-	value := '';
-	try
-		Result := Serialize(jsonObject);
-		value := jsonObject.ToJSON();
-	finally
-		TCommonMemory.SafeFreeAndNil(jsonObject);
-	end;
-end;
+@Include("implementation.serialization")
 
-function Deserialize(const value: string): Cardinal; overload;
-var
-	jsonValue: TJSONValue;
-begin
-	if value.Trim = '' then
-	begin
-		if EMPTY then
-		begin
-			exit(SERIALIZATION_SUCCEEDED);
-		end
-		else
-		begin
-			exit(SERIALIZATION_FAILED);
-		end;
-	end;
-
-	try
-		jsonValue := TJSONObject.ParseJSONValue(value);
-		exit(Deserialize(jsonValue));
-	finally
-		TCommonMemory.SafeFreeAndNil(jsonValue);
-	end;
-end;

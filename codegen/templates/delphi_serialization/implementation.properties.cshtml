@@ -1,0 +1,12 @@
+@foreach(var p in Model.Properties) {
+<text>function @(Model.Name).Get@(p.Name): @(p.Type);
+begin
+	Result := _@(p.Name);
+end;
+
+procedure @(Model.Name).Set@(p.Name)(const value: @(p.Type));
+begin
+	_@(p.Name) := value;
+end;
+</text>
+}
