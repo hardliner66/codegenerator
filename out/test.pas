@@ -8,26 +8,38 @@ uses
 	m2.Common.Serializer.Interfaces;
 
 type
-    IDisabledRisError = interface;
-    TDisabledRisError = class;    IDisabledRisErrorList = interface;
-    TDisabledRisErrorList = class;    IGetRisConfigurationResponseList = interface;
-    TGetRisConfigurationResponseList = class;    ISomeObject = interface;
-    TSomeObject = class;
+    IInterfacedData = interface;
+    TInterfacedData = class;    TData = class;
 
-    IDisabledRisError = interface(IIsSerializable)
-        function GetErrorcode: String;
-        procedure SetErrorcode(const value: String);
-        property Errorcode: String read GetErrorcode write SetErrorcode;
+    IInterfacedData = interface(IIsSerializable)
+        function GetSomeText1: String;
+        procedure SetSomeText1(const value: String);
+        property SomeText1: String read GetSomeText1 write SetSomeText1;
 
 
-        function GetDisabledUntil: int64;
-        procedure SetDisabledUntil(const value: int64);
-        property DisabledUntil: int64 read GetDisabledUntil write SetDisabledUntil;
+        function GetSomeNumber1: Int64;
+        procedure SetSomeNumber1(const value: Int64);
+        property SomeNumber1: Int64 read GetSomeNumber1 write SetSomeNumber1;
+
+
+        function GetSomeObject1: ExternalType;
+        procedure SetSomeObject1(const value: ExternalType);
+        property SomeObject1: ExternalType read GetSomeObject1 write SetSomeObject1;
+
+
+        function GetSomePrimitiveList1: TList<Integer>;
+        procedure SetSomePrimitiveList1(const value: TList<Integer>);
+        property SomePrimitiveList1: TList<Integer> read GetSomePrimitiveList1 write SetSomePrimitiveList1;
+
+
+        function GetSomeObjectList1: TList<ExternalType>;
+        procedure SetSomeObjectList1(const value: TList<ExternalType>);
+        property SomeObjectList1: TList<ExternalType> read GetSomeObjectList1 write SetSomeObjectList1;
 
 
     end;
 
-    TDisabledRisError = class(TInterfacedObject, IIsSerializable, IDisabledRisError)
+    TInterfacedData = class(TInterfacedObject, IIsSerializable, IInterfacedData)
     strict private
 
     strict private
@@ -35,8 +47,11 @@ type
         strict private
             constructor Create(); reintroduce; virtual; abstract; // Prevent anyone from accessing the constructor
         public
-            const ErrorcodeKey = 'error_code';
-            const DisabledUntilKey = 'disabled_until';
+            const SomeText1Key = 'some_text';
+            const SomeNumber1Key = 'SomeNumber1';
+            const SomeObject1Key = 'SomeObject1';
+            const SomePrimitiveList1Key = 'SomePrimitiveList1';
+            const SomeObjectList1Key = 'SomeObjectList1';
 
         end;
 
@@ -44,50 +59,25 @@ type
     strict private
 
     public
-        function GetErrorcode: String;
-        procedure SetErrorcode(const value: String);
-        property Errorcode: String read GetErrorcode write SetErrorcode;
+        function GetSomeText1: String;
+        procedure SetSomeText1(const value: String);
+        property SomeText1: String read GetSomeText1 write SetSomeText1;
 
-        function GetDisabledUntil: int64;
-        procedure SetDisabledUntil(const value: int64);
-        property DisabledUntil: int64 read GetDisabledUntil write SetDisabledUntil;
+        function GetSomeNumber1: Int64;
+        procedure SetSomeNumber1(const value: Int64);
+        property SomeNumber1: Int64 read GetSomeNumber1 write SetSomeNumber1;
 
+        function GetSomeObject1: ExternalType;
+        procedure SetSomeObject1(const value: ExternalType);
+        property SomeObject1: ExternalType read GetSomeObject1 write SetSomeObject1;
 
-        function Serialize(out value: string): Cardinal; overload;
-        function Deserialize(const value: string): Cardinal; overload;
+        function GetSomePrimitiveList1: TList<Integer>;
+        procedure SetSomePrimitiveList1(const value: TList<Integer>);
+        property SomePrimitiveList1: TList<Integer> read GetSomePrimitiveList1 write SetSomePrimitiveList1;
 
-        function Serialize(out value: TJSONValue): Cardinal; overload;
-        function Deserialize(const value: TJSONValue): Cardinal; overload;
-
-    end;
-
-    IDisabledRisErrorList = interface(IIsSerializable)
-        function GetErrors: TList<DisabledRisError>;
-        procedure SetErrors(const value: TList<DisabledRisError>);
-        property Errors: TList<DisabledRisError> read GetErrors write SetErrors;
-
-
-    end;
-
-    TDisabledRisErrorList = class(TInterfacedObject, IIsSerializable, IDisabledRisErrorList)
-    strict private
-
-    strict private
-        type KeyConstants = class abstract
-        strict private
-            constructor Create(); reintroduce; virtual; abstract; // Prevent anyone from accessing the constructor
-        public
-            const ErrorsKey = 'errors';
-
-        end;
-
-
-    strict private
-
-    public
-        function GetErrors: TList<DisabledRisError>;
-        procedure SetErrors(const value: TList<DisabledRisError>);
-        property Errors: TList<DisabledRisError> read GetErrors write SetErrors;
+        function GetSomeObjectList1: TList<ExternalType>;
+        procedure SetSomeObjectList1(const value: TList<ExternalType>);
+        property SomeObjectList1: TList<ExternalType> read GetSomeObjectList1 write SetSomeObjectList1;
 
 
         constructor Create();
@@ -100,103 +90,39 @@ type
 
     end;
 
-    IGetRisConfigurationResponseList = interface(IIsSerializable)
-        function GetNONE: NONE;
-        procedure SetNONE(const value: NONE);
-        property NONE: NONE read GetNONE write SetNONE;
-
-
-    end;
-
-    TGetRisConfigurationResponseList = class(TInterfacedObject, IIsSerializable, IGetRisConfigurationResponseList)
+    TData = class(TInterfacedObject, IIsSerializable)
     strict private
 
     strict private
         type KeyConstants = class abstract
         strict private
-            constructor Create(); reintroduce; virtual; abstract; // Prevent anyone from accessing the constructor
-        public
-            const NONEKey = 'NONE';
+			constructor Create(); reintroduce; virtual; abstract; // Prevent anyone from accessing the constructor
+		public
+            const SomeText1Key = 'some_text';
+            const SomeNumber1Key = 'SomeNumber1';
+            const SomeObject1Key = 'SomeObject1';
+            const SomePrimitiveList1Key = 'SomePrimitiveList1';
+            const SomeObjectList1Key = 'SomeObjectList1';
 
-        end;
-
-
-    strict private
+		end;
 
     public
-        function GetNONE: NONE;
-        procedure SetNONE(const value: NONE);
-        property NONE: NONE read GetNONE write SetNONE;
-
+        SomeText1: String;
+        SomeNumber1: Int64;
+        SomeObject1: ExternalType;
+        SomePrimitiveList1: TList<Integer>;
+        SomeObjectList1: TList<ExternalType>;
 
         constructor Create();
         destructor Destroy(); override;
+
         function Serialize(out value: string): Cardinal; overload;
         function Deserialize(const value: string): Cardinal; overload;
 
         function Serialize(out value: TJSONValue): Cardinal; overload;
         function Deserialize(const value: TJSONValue): Cardinal; overload;
 
-    end;
-
-    ISomeObject = interface(IIsSerializable)
-        function GetSomeValue: String;
-        procedure SetSomeValue(const value: String);
-        property SomeValue: String read GetSomeValue write SetSomeValue;
-
-
-        function GetSomeOtherValue: TList<Boolean>;
-        procedure SetSomeOtherValue(const value: TList<Boolean>);
-        property SomeOtherValue: TList<Boolean> read GetSomeOtherValue write SetSomeOtherValue;
-
-
-        function GetSomeQuotedValue: TList<String>;
-        procedure SetSomeQuotedValue(const value: TList<String>);
-        property SomeQuotedValue: TList<String> read GetSomeQuotedValue write SetSomeQuotedValue;
-
-
-    end;
-
-    TSomeObject = class(TInterfacedObject, IIsSerializable, ISomeObject)
-    strict private
-
-    strict private
-        type KeyConstants = class abstract
-        strict private
-            constructor Create(); reintroduce; virtual; abstract; // Prevent anyone from accessing the constructor
-        public
-            const SomeValueKey = 'some_value';
-            const SomeOtherValueKey = 'some_other_value';
-            const SomeQuotedValueKey = 'some other value';
-
-        end;
-
-
-    strict private
-
-    public
-        function GetSomeValue: String;
-        procedure SetSomeValue(const value: String);
-        property SomeValue: String read GetSomeValue write SetSomeValue;
-
-        function GetSomeOtherValue: TList<Boolean>;
-        procedure SetSomeOtherValue(const value: TList<Boolean>);
-        property SomeOtherValue: TList<Boolean> read GetSomeOtherValue write SetSomeOtherValue;
-
-        function GetSomeQuotedValue: TList<String>;
-        procedure SetSomeQuotedValue(const value: TList<String>);
-        property SomeQuotedValue: TList<String> read GetSomeQuotedValue write SetSomeQuotedValue;
-
-
-        constructor Create();
-        destructor Destroy(); override;
-        function Serialize(out value: string): Cardinal; overload;
-        function Deserialize(const value: string): Cardinal; overload;
-
-        function Serialize(out value: TJSONValue): Cardinal; overload;
-        function Deserialize(const value: TJSONValue): Cardinal; overload;
-
-    end;
+end;
 
 
 
@@ -207,53 +133,14 @@ uses
 	m2.Common.JsonHelper,
 	m2.Common.Memory;
 
-{DisabledRisError}
+{InterfacedData}
 
-
-
-function Serialize(out value: string): Cardinal; overload;
-var
-	jsonObject: TJSONValue;
-begin
-	value := '';
-	try
-		Result := Serialize(jsonObject);
-		value := jsonObject.ToJSON();
-	finally
-		TCommonMemory.SafeFreeAndNil(jsonObject);
-	end;
-end;
-
-function Deserialize(const value: string): Cardinal; overload;
-var
-	jsonValue: TJSONValue;
-begin
-	if value.Trim = '' then
-	begin
-		if EMPTY then
-		begin
-			exit(SERIALIZATION_SUCCEEDED);
-		end
-		else
-		begin
-			exit(SERIALIZATION_FAILED);
-		end;
-	end;
-
-	try
-		jsonValue := TJSONObject.ParseJSONValue(value);
-		exit(Deserialize(jsonValue));
-	finally
-		TCommonMemory.SafeFreeAndNil(jsonValue);
-	end;
-end;{DisabledRisErrorList}
-
-constructor DisabledRisErrorList.Create();
+constructor InterfacedData.Create();
 begin
 
 end;
 
-destructor DisabledRisErrorList.Destroy();
+destructor InterfacedData.Destroy();
 begin
 
 end;
@@ -294,62 +181,14 @@ begin
 	finally
 		TCommonMemory.SafeFreeAndNil(jsonValue);
 	end;
-end;{GetRisConfigurationResponseList}
+end;{Data}
 
-constructor GetRisConfigurationResponseList.Create();
+constructor Data.Create();
 begin
 
 end;
 
-destructor GetRisConfigurationResponseList.Destroy();
-begin
-
-end;
-
-
-function Serialize(out value: string): Cardinal; overload;
-var
-	jsonObject: TJSONValue;
-begin
-	value := '';
-	try
-		Result := Serialize(jsonObject);
-		value := jsonObject.ToJSON();
-	finally
-		TCommonMemory.SafeFreeAndNil(jsonObject);
-	end;
-end;
-
-function Deserialize(const value: string): Cardinal; overload;
-var
-	jsonValue: TJSONValue;
-begin
-	if value.Trim = '' then
-	begin
-		if EMPTY then
-		begin
-			exit(SERIALIZATION_SUCCEEDED);
-		end
-		else
-		begin
-			exit(SERIALIZATION_FAILED);
-		end;
-	end;
-
-	try
-		jsonValue := TJSONObject.ParseJSONValue(value);
-		exit(Deserialize(jsonValue));
-	finally
-		TCommonMemory.SafeFreeAndNil(jsonValue);
-	end;
-end;{SomeObject}
-
-constructor SomeObject.Create();
-begin
-
-end;
-
-destructor SomeObject.Destroy();
+destructor Data.Destroy();
 begin
 
 end;
