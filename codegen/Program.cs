@@ -244,6 +244,7 @@ namespace Codegen
                 {
                     type = parserConfig.TypeMapping[type.ToLower()];
                 }
+
                 var p = new Property(
                     propertyNode.ChildNodes[0].Token.Value.ToString(),
                     type,
@@ -315,7 +316,7 @@ namespace Codegen
                 // You only need to add strongnames when your appdomain is not a full trust environment.
                 var strongNames = new StrongName[0];
 
-                string generatedDll = System.IO.Path.GetTempFileName();
+                string generatedDll = Path.GetTempFileName();
 
                 List<string> arguments = new List<string>(args);
                 arguments.Add("-@");
@@ -328,9 +329,9 @@ namespace Codegen
                 var exitCode = domain.ExecuteAssembly(Assembly.GetExecutingAssembly().Location, arguments.ToArray());
                 // RazorEngine will cleanup. 
                 AppDomain.Unload(domain);
-                if (System.IO.File.Exists(generatedDll))
+                if (File.Exists(generatedDll))
                 {
-                    System.IO.File.Delete(generatedDll);
+                    File.Delete(generatedDll);
                 }
                 return;
             }
@@ -355,7 +356,7 @@ namespace Codegen
                     //var language = new LanguageData(grammar);
                     var parser = new Irony.Parsing.Parser(grammar);
 
-                    var text = System.IO.File.ReadAllText(options.DataFile);
+                    var text = File.ReadAllText(options.DataFile);
 
                     var parseTree = parser.Parse(text);
 
@@ -384,7 +385,7 @@ namespace Codegen
                                 externalList = externalList.Add(parseExternal(node.ChildNodes[0]));
                             }
                         }
-                        Global global = new Global(objectList, System.IO.Path.GetFileNameWithoutExtension(options.DataFile));
+                        Global global = new Global(objectList, Path.GetFileNameWithoutExtension(options.DataFile));
 
                         if (validate(global, externalList, !options.Untyped))
                         {
@@ -406,11 +407,11 @@ namespace Codegen
 
                             var service = RazorEngineService.Create(config);
 
-                            foreach (var f in System.IO.Directory.EnumerateFiles(path, "*.cshtml"))
+                            foreach (var f in Directory.EnumerateFiles(path, "*.cshtml"))
                             {
-                                string template = System.IO.File.ReadAllText(f);
+                                string template = File.ReadAllText(f);
 
-                                var name = System.IO.Path.GetFileNameWithoutExtension(f);
+                                var name = Path.GetFileNameWithoutExtension(f);
 
                                 if (name.ToLower() != "main")
                                 {
@@ -428,7 +429,7 @@ namespace Codegen
                             }
                             else
                             {
-                                System.IO.File.WriteAllText(options.OutputFile, result, System.Text.Encoding.UTF8);
+                                File.WriteAllText(options.OutputFile, result, System.Text.Encoding.UTF8);
                             }
                         }
                         else

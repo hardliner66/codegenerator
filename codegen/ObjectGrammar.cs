@@ -37,6 +37,11 @@ namespace Codegen
             var list = new NonTerminal("list");
             var comma = ToTerm(",", "comma");
 
+            CommentTerminal SingleLineComment = new CommentTerminal("SingleLineComment", "//", "\r", "\n", "\u2085", "\u2028", "\u2029");
+            CommentTerminal DelimitedComment = new CommentTerminal("DelimitedComment", "/*", "*/");
+            NonGrammarTerminals.Add(SingleLineComment);
+            NonGrammarTerminals.Add(DelimitedComment);
+
             external.Rule = ToTerm("external") + identifier;
 
             line.Rule = external | @object;

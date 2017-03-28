@@ -8,6 +8,14 @@ object DisabledRisErrorList [interfaced] {
 	Errors: List DisabledRisError [name=errors]
 }
 
+// Single Line Comment
+
+/*
+Multi
+Line
+Comment
+*/
+
 object GetRisConfigurationResponseList [interfaced, list=DisabledRisError] {
 	NONE:NONE
 }
