@@ -1,5 +1,0 @@
-@if (Model.Type.ToLower() == "string") {
-    @:public final static @Extensions.ToJavaType(@Model.Type) @Model.Name = "@Model.Default";
-} else {
-    @:public final static @Extensions.ToJavaType(@Model.Type) @Model.Name = @Model.Default;
-}
