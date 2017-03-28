@@ -4,13 +4,13 @@
     strict private
         type KeyConstants = class abstract
         strict private
-			constructor Create(); reintroduce; virtual; abstract; // Prevent anyone from accessing the constructor
-		public
-			@foreach(var p in Model.Properties) {
+            constructor Create(); reintroduce; virtual; abstract; // Prevent anyone from accessing the constructor
+        public
+            @foreach(var p in Model.Properties) {
                 @Include("declaration.object.key_constants", p)
             }
 
-		end;
+        end;
 
 
     strict private
@@ -27,19 +27,18 @@
         @:procedure Set@(p.Name)(const value: @p.Type);
         @:property @p.Name: @p.Type read Get@(p.Name) write Set@(p.Name);
         }
-<text>
-</text>
+<text></text>
     }
 
     @if(@Extensions.HasObjectType(Model)) {
         @:constructor Create();
         @:destructor Destroy(); override;
     }
-
         function Serialize(out value: string): Cardinal; overload;
         function Deserialize(const value: string): Cardinal; overload;
 
         function Serialize(out value: TJSONValue): Cardinal; overload;
         function Deserialize(const value: TJSONValue): Cardinal; overload;
 
-end;
+    end;
+
