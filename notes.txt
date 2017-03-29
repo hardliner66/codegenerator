@@ -1,0 +1,24 @@
+codegen main parts
+TemplateEngine: to define the output of the codegen
+DataLanguage: to define custom data structures
+
+==================================================================================
+
+TemplateEngine
+The backend for the template engine is razor (asp.net)
+
+Features:
+    - split up templates into multiple files
+    - extend the template engine with custom functions (CS-Script)
+
+----------------------------------------------------------------------------------
+
+DataLanguage
+The data language is parsed with Irony.net
+
+Features:
+    - typesafe (can be optionally deactivated)
+    - concise representation of the data structures, for which code should be generated
+    - configurable primitive types (per template)
+        - custom names
+        - mapping to custom names
