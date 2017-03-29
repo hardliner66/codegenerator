@@ -29,9 +29,9 @@ type
         property SomeObject1: ExternalType read GetSomeObject1 write SetSomeObject1;
 
 
-        function GetSomePrimitiveList1: TList<Integer>;
-        procedure SetSomePrimitiveList1(const value: TList<Integer>);
-        property SomePrimitiveList1: TList<Integer> read GetSomePrimitiveList1 write SetSomePrimitiveList1;
+        function GetSomePrimitiveList1: TList<Int>;
+        procedure SetSomePrimitiveList1(const value: TList<Int>);
+        property SomePrimitiveList1: TList<Int> read GetSomePrimitiveList1 write SetSomePrimitiveList1;
 
 
         function GetSomeObjectList1: TList<ExternalType>;
@@ -48,7 +48,7 @@ type
 
     TInterfacedData = class(TInterfacedObject, IIsSerializable, IInterfacedData)
     strict private
-
+		const EMPTY: boolean = true;
     strict private
         type KeyConstants = class abstract
         strict private
@@ -78,9 +78,9 @@ type
         procedure SetSomeObject1(const value: ExternalType);
         property SomeObject1: ExternalType read GetSomeObject1 write SetSomeObject1;
 
-        function GetSomePrimitiveList1: TList<Integer>;
-        procedure SetSomePrimitiveList1(const value: TList<Integer>);
-        property SomePrimitiveList1: TList<Integer> read GetSomePrimitiveList1 write SetSomePrimitiveList1;
+        function GetSomePrimitiveList1: TList<Int>;
+        procedure SetSomePrimitiveList1(const value: TList<Int>);
+        property SomePrimitiveList1: TList<Int> read GetSomePrimitiveList1 write SetSomePrimitiveList1;
 
         function GetSomeObjectList1: TList<ExternalType>;
         procedure SetSomeObjectList1(const value: TList<ExternalType>);
@@ -104,7 +104,7 @@ type
 
     TData = class(TInterfacedObject, IIsSerializable)
     strict private
-
+		const EMPTY: boolean = true;
     strict private
         type KeyConstants = class abstract
         strict private
@@ -122,7 +122,7 @@ type
         SomeText2: String;
         SomeNumber2: Int64;
         SomeObject2: ExternalType;
-        SomePrimitiveList2: TList<Integer>;
+        SomePrimitiveList2: TList<Int>;
         SomeObjectList2: TList<ExternalType>;
         SomeCrossReference2: InterfacedData;
 
@@ -151,7 +151,7 @@ uses
 constructor TInterfacedData.Create();
 begin
 	_SomeObject1 := ExternalType.Create();
-	_SomePrimitiveList1 := TList<Integer>.Create();
+	_SomePrimitiveList1 := TList<Int>.Create();
 	_SomeObjectList1 := TList<ExternalType>.Create();
 	_SomeCrossReference1 := Data.Create();
 end;
@@ -193,12 +193,12 @@ begin
 	_SomeObject1 := value;
 end;
 
-function InterfacedData.GetSomePrimitiveList1: Integer;
+function InterfacedData.GetSomePrimitiveList1: Int;
 begin
 	Result := _SomePrimitiveList1;
 end;
 
-procedure InterfacedData.SetSomePrimitiveList1(const value: Integer);
+procedure InterfacedData.SetSomePrimitiveList1(const value: Int);
 begin
 	_SomePrimitiveList1 := value;
 end;
@@ -268,7 +268,7 @@ end;
 constructor TData.Create();
 begin
 	SomeObject2 := ExternalType.Create();
-	SomePrimitiveList2 := TList<Integer>.Create();
+	SomePrimitiveList2 := TList<Int>.Create();
 	SomeObjectList2 := TList<ExternalType>.Create();
 	SomeCrossReference2 := InterfacedData.Create();
 end;
