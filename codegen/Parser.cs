@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Codegen.DataModel;
 using System.Threading.Tasks;
 
 namespace Codegen
@@ -46,7 +47,7 @@ namespace Codegen
                 //printAst(parseTree, grammar.dispTree);
                 //Console.ReadLine();
                 //return;
-                ImmutableList<Object> objectList = ImmutableList<Object>.Empty;
+                ImmutableList<DataModel.Object> objectList = ImmutableList<DataModel.Object>.Empty;
                 ImmutableList<TypeDeclaration> externalList = ImmutableList<TypeDeclaration>.Empty;
                 foreach (var node in parseTree.Root.ChildNodes)
                 {
@@ -145,7 +146,7 @@ namespace Codegen
             return default_value;
         }
 
-        static Object parseObjectNode(ParseTreeNode node)
+        static DataModel.Object parseObjectNode(ParseTreeNode node)
         {
 
             ImmutableDictionary<string, string> attributes = getAttributes(node, 1);
@@ -179,7 +180,7 @@ namespace Codegen
 
                 properties = properties.Add(p);
             }
-            return new Object(node.ChildNodes[0].Token.Value.ToString(), properties, attributes);
+            return new DataModel.Object(node.ChildNodes[0].Token.Value.ToString(), properties, attributes);
         }
 
         static TypeDeclaration parseExternal(ParseTreeNode node)
