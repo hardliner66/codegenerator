@@ -6,7 +6,7 @@ namespace codegen.JsonGenerator
 {
     public class Generator
     {
-        public static void Main(Global g, string path)
+        public static void Execute(Global g, string path)
         {
             string output = JsonConvert.SerializeObject(g, Formatting.Indented);
             if (string.IsNullOrWhiteSpace(path))

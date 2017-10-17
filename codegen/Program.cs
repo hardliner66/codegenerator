@@ -101,15 +101,19 @@ public class Program
                 if (File.Exists(Path.Combine(options.TemplateDir, options.Generator + ".dll")))
                 {
                     asm = Assembly.LoadFrom(Path.Combine(options.TemplateDir, options.Generator + ".dll"));
-
+                    
                     foreach (var t in asm.GetTypes())
                     {
-                        foreach (var m in t.GetMethods())
+                        if (t.Name.ToLower() == "generator")
                         {
-                            if (m.Name.ToLower() == "main")
+                            foreach (var m in t.GetMethods())
                             {
-                                m.Invoke(null, new object[] { Shared.Global, options.Output });
+                                if (m.Name.ToLower() == "execute")
+                                {
+                                    m.Invoke(null, new object[] { Shared.Global, options.Output });
+                                }
                             }
+                            break;
                         }
                     }
                 }
