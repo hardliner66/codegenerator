@@ -1,6 +1,3 @@
-# Contributing
-see [Contributing](https://bitbucket.org/hardliner66/codegenerator/wiki/Contributing)
-
 # Creating a generator
  - Create a new Dll Project
  - Add reference to codegen.DataModel
