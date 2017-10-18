@@ -92,6 +92,11 @@ public class Program
         var options = new Options();
         if (CommandLine.Parser.Default.ParseArguments(args, options))
         {
+            if (string.IsNullOrWhiteSpace(options.TemplateDir))
+            {
+                options.TemplateDir = AppDomain.CurrentDomain.BaseDirectory;
+            }
+
             try
             {
                 Shared.Global = DataParser.Parse(options.File, !options.Untyped);
@@ -104,7 +109,7 @@ public class Program
                     
                     foreach (var t in asm.GetTypes())
                     {
-                        if (t.Name.ToLower() == "generator")
+                        if (t.IsDefined(typeof(Codegen.Generator)))
                         {
                             foreach (var m in t.GetMethods())
                             {

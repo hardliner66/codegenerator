@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 
 namespace codegen.JsonGenerator
 {
+    [Codegen.Generator]
     public class Generator
     {
         public static void Execute(Global g, string path)

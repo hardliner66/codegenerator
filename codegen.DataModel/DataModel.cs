@@ -6,9 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+namespace Codegen
+{
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    public class Generator : Attribute { }
+}
+
 namespace Codegen.DataModel
 {
-
     public class ObjectWithAttributes
     {
         public ImmutableDictionary<string, string> Attributes { get; }

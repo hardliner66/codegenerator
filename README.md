@@ -3,7 +3,10 @@
  - Add reference to codegen.DataModel
  - Add the following class
  ```cs
-    public class Generator
+    using Codegen.DataModel;
+
+    [Codegen.Generator]
+    public class GeneratorName
     {
         public static void Execute(Global g, string path)
         {
