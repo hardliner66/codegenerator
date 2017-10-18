@@ -1,3 +1,6 @@
+# Contributing
+see [Contributing.md](Contributing.md)
+
 # Creating a generator
  - Create a new Dll Project
  - Add reference to codegen.DataModel
