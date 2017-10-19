@@ -139,9 +139,9 @@ namespace Codegen
         static string getDefaultValue(ParseTreeNode node)
         {
             string default_value = "";
-            if (node.ChildNodes[2].ChildNodes.Count > 0)
+            if (node.ChildNodes[3].ChildNodes.Count > 0)
             {
-                default_value = node.ChildNodes[2].ChildNodes[0].ChildNodes[0].ChildNodes[0].Token.Value.ToString();
+                default_value = node.ChildNodes[3].ChildNodes[0].ChildNodes[0].ChildNodes[0].Token.Value.ToString();
             }
             return default_value;
         }
@@ -156,26 +156,29 @@ namespace Codegen
             {
                 string type;
                 bool list = false;
-                if (propertyNode.ChildNodes[1].ChildNodes[0].Term.Name == "list")
+                if (propertyNode.ChildNodes[2].ChildNodes[0].Term.Name == "list")
                 {
                     list = true;
-                    type = propertyNode.ChildNodes[1].ChildNodes[0].ChildNodes[0].Token.Value.ToString();
+                    type = propertyNode.ChildNodes[2].ChildNodes[0].ChildNodes[0].Token.Value.ToString();
                 }
                 else
                 {
-                    type = propertyNode.ChildNodes[1].ChildNodes[0].Token.Value.ToString();
+                    type = propertyNode.ChildNodes[2].ChildNodes[0].Token.Value.ToString();
                 }
                 if (parserConfig.TypeMapping.ContainsKey(type.ToLower()))
                 {
                     type = parserConfig.TypeMapping[type.ToLower()];
                 }
 
+                var defaultValue = getDefaultValue(propertyNode);
+
                 var p = new Property(
-                    propertyNode.ChildNodes[0].Token.Value.ToString(),
+                    propertyNode.ChildNodes[1].Token.Value.ToString(),
                     type,
                     list,
-                    getAttributes(propertyNode, 3),
-                    getDefaultValue(propertyNode)
+                    getAttributes(propertyNode, 4),
+                    defaultValue,
+                    !string.IsNullOrWhiteSpace(defaultValue) || propertyNode.ChildNodes[0].ChildNodes.Count > 0
                 );
 
                 properties = properties.Add(p);

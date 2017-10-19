@@ -30,12 +30,15 @@ namespace Codegen.DataModel
         public bool List { get; }
         public string Default { get; }
 
-        public Property(string name, string type, bool list, ImmutableDictionary<string, string> attributes, string default_value) : base(attributes)
+        public bool Optional { get; }
+
+        public Property(string name, string type, bool list, ImmutableDictionary<string, string> attributes, string default_value, bool optional) : base(attributes)
         {
             Name = name;
             Type = type;
             List = list;
             Default = default_value;
+            Optional = optional;
         }
     }
 

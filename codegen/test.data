@@ -10,8 +10,9 @@ object InterfacedData [interfaced] {
 
 // Same as above, but without interfaced attribute
 object Data {
-	SomeText2: String [name=some_text]
-	SomeNumber2: Int64 [ignore]
+	? SomeText2: String            // explicit optional, no default value
+	? SomeNumber2: Int64 = 35      // explicit optional, with default value
+	SomeOtherText: String = "abcd" // implicit optional, with default value
 	SomeObject2: ExternalType
 	SomePrimitiveList2: List Int
 	SomeObjectList2: List ExternalType

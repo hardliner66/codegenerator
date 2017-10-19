@@ -31,6 +31,8 @@ namespace Codegen
             var attribute_kv = new NonTerminal("attribute_kv");
             var attribute_value = new NonTerminal("attribute_value");
             var attribute_flag = new NonTerminal("attribute_flag");
+            var optional_flag = new NonTerminal("optional_flag");
+            var optional_flag_opt = new NonTerminal("optional_flag_opt");
             var default_value = new NonTerminal("default_value");
             var default_value_opt = new NonTerminal("default_value_opt");
             var type = new NonTerminal("type");
@@ -62,7 +64,10 @@ namespace Codegen
             default_value.Rule = ToTerm("=") + attribute_value;
             default_value_opt.Rule = Empty | default_value;
 
-            property.Rule = identifier + ":" + type + default_value_opt + attributeList_opt;
+            optional_flag.Rule = "?";
+            optional_flag_opt.Rule = Empty | optional_flag;
+
+            property.Rule = optional_flag_opt + identifier + ":" + type + default_value_opt + attributeList_opt;
 
             properties.Rule = MakePlusRule(properties, property);
 
