@@ -13,15 +13,15 @@ namespace Codegen
 {
     public class DataParser
     {
-        public static Global Parse(string path, bool shouldValidate)
+        public static Global Parse(string path, bool shouldValidate, string config)
         {
-            if (File.Exists(Path.Combine(path, "config.json")))
+            if (File.Exists(Path.Combine(path, config)))
             {
-                parserConfig = readParserConfig(Path.Combine(path, "config.json"));
+                parserConfig = readParserConfig(Path.Combine(path, config));
             }
-            else if (File.Exists("config.json"))
+            else if (File.Exists(config))
             {
-                parserConfig = readParserConfig("config.json");
+                parserConfig = readParserConfig(config);
             }
 
             var grammar = new ObjectGrammar();

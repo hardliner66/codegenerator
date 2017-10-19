@@ -8,6 +8,7 @@ using System.Reflection;
 using System.IO;
 using Codegen.DataModel;
 using Codegen;
+using System.Collections.Generic;
 
 namespace Codegen
 {
@@ -56,9 +57,9 @@ public class Program
         [ValueOption(0)]
         public string File { get; set; }
 
-        [Option('o', "out", Required = false, DefaultValue = "",
-          HelpText = "Output file.")]
-        public string Output { get; set; }
+        [Option('c', "config", Required = false, DefaultValue = "config.json",
+          HelpText = "Parser configuration file.")]
+        public string ConfigFile { get; set; }
 
         [Option('d', "dir", Required = false, DefaultValue = "",
           HelpText = "Template Directory. (This directory should contain main.cshtml)")]
@@ -75,6 +76,13 @@ public class Program
         [Option('p', "post-generation", Required = false, DefaultValue = "",
           HelpText = "Command to execute after generation.")]
         public string PostGeneration { get; set; }
+
+        [Option('o', "out", Required = false, DefaultValue = "",
+          HelpText = "Output file.")]
+        public string Output { get; set; }
+
+        [ValueList(typeof(List<string>))]
+        public List<string> Args { get; set; }
 
         [ParserState]
         public IParserState LastParserState { get; set; }
@@ -99,7 +107,7 @@ public class Program
 
             try
             {
-                Shared.Global = DataParser.Parse(options.File, !options.Untyped);
+                Shared.Global = DataParser.Parse(options.File, !options.Untyped, options.ConfigFile);
 
                 Assembly asm;
 
@@ -115,7 +123,7 @@ public class Program
                             {
                                 if (m.Name.ToLower() == "execute")
                                 {
-                                    m.Invoke(null, new object[] { Shared.Global, options.Output });
+                                    m.Invoke(null, new object[] { Shared.Global, options.Output, options.Args is null ? new List<string> { } : options.Args });
                                 }
                             }
                             break;

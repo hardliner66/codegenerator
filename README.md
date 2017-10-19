@@ -3,12 +3,13 @@
  - Add reference to codegen.DataModel
  - Add the following class
  ```cs
+    using System.Collections.Generic;
     using Codegen.DataModel;
 
     [Codegen.Generator]
     public class GeneratorName
     {
-        public static void Execute(Global g, string path)
+        public static void Execute(Global g, string path, List<string> args)
         {
             // insert generation code here
         }
