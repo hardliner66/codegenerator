@@ -62,7 +62,7 @@ public class Program
         public string ConfigFile { get; set; }
 
         [Option('d', "dir", Required = false, DefaultValue = "",
-          HelpText = "Template Directory. (This directory should contain main.cshtml)")]
+          HelpText = "Template Directory. (This directory should contain the generator)")]
         public string TemplateDir { get; set; }
 
         [Option('u', "untyped", Required = false, DefaultValue = false,
@@ -110,9 +110,11 @@ public class Program
                 Shared.Global = DataParser.Parse(options.File, !options.Untyped, options.ConfigFile);
 
                 Assembly asm;
-
-                var OutputDirectory = new DirectoryInfo(options.OutputDir);
-                if (!OutputDirectory.Exists) { OutputDirectory.Create(); }
+                
+                if (!string.IsNullOrWhiteSpace(options.OutputDir))
+                {
+                    if (!Directory.Exists(options.OutputDir)) { Directory.CreateDirectory(options.OutputDir); }
+                }
 
                 if (File.Exists(Path.Combine(options.TemplateDir, options.Generator + ".dll")))
                 {
@@ -126,7 +128,7 @@ public class Program
                             {
                                 if (m.Name.ToLower() == "execute")
                                 {
-                                    m.Invoke(null, new object[] { Shared.Global, OutputDirectory, options.Args is null ? new List<string> { } : options.Args });
+                                    m.Invoke(null, new object[] { Shared.Global, options.OutputDir, options.Args is null ? new List<string> { } : options.Args });
                                 }
                             }
                             break;

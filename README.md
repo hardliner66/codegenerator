@@ -10,7 +10,7 @@
     [Codegen.Generator]
     public class GeneratorName
     {
-        public static void Execute(Global g, DirectoryInfo directory, List<string> args)
+        public static void Execute(Global g, string directory, List<string> args)
         {
             // insert generation code here
         }
