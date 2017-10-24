@@ -47,17 +47,17 @@ namespace Codegen
                 //printAst(parseTree, grammar.dispTree);
                 //Console.ReadLine();
                 //return;
-                ImmutableList<DataModel.Object> objectList = ImmutableList<DataModel.Object>.Empty;
-                ImmutableList<TypeDeclaration> externalList = ImmutableList<TypeDeclaration>.Empty;
+                var objectList = new List<DataModel.Object>();
+                var externalList = new List<TypeDeclaration>();
                 foreach (var node in parseTree.Root.ChildNodes)
                 {
                     if (node.ChildNodes[0].Term.Name == "object")
                     {
-                        objectList = objectList.Add(parseObjectNode(node.ChildNodes[0]));
+                        objectList.Add(parseObjectNode(node.ChildNodes[0]));
                     }
                     else
                     {
-                        externalList = externalList.Add(parseExternal(node.ChildNodes[0]));
+                        externalList.Add(parseExternal(node.ChildNodes[0]));
                     }
                 }
                 var global = new Global(objectList, Path.GetFileNameWithoutExtension(path), externalList);
@@ -116,20 +116,20 @@ namespace Codegen
             }
         }
 
-        static ImmutableDictionary<string, string> getAttributes(ParseTreeNode node, int attributePosition)
+        static Dictionary<string, string> getAttributes(ParseTreeNode node, int attributePosition)
         {
-            var attributes = ImmutableDictionary<string, string>.Empty;
+            var attributes = new Dictionary<string, string>();
             if (node.ChildNodes[attributePosition].ChildNodes.Count > 0)
             {
                 foreach (var attributeNode in node.ChildNodes[attributePosition].ChildNodes[0].ChildNodes[0].ChildNodes)
                 {
                     if (attributeNode.ChildNodes[0].Term.Name == "attribute_flag")
                     {
-                        attributes = attributes.Add(attributeNode.ChildNodes[0].ChildNodes[0].Token.Value.ToString(), "true");
+                        attributes.Add(attributeNode.ChildNodes[0].ChildNodes[0].Token.Value.ToString(), "true");
                     }
                     else
                     {
-                        attributes = attributes.Add(attributeNode.ChildNodes[0].ChildNodes[0].Token.Value.ToString(), attributeNode.ChildNodes[0].ChildNodes[1].ChildNodes[0].Token.Value.ToString());
+                        attributes.Add(attributeNode.ChildNodes[0].ChildNodes[0].Token.Value.ToString(), attributeNode.ChildNodes[0].ChildNodes[1].ChildNodes[0].Token.Value.ToString());
                     }
                 }
             }
@@ -149,8 +149,8 @@ namespace Codegen
         static DataModel.Object parseObjectNode(ParseTreeNode node)
         {
 
-            ImmutableDictionary<string, string> attributes = getAttributes(node, 1);
-            ImmutableList<Property> properties = ImmutableList<Property>.Empty;
+            Dictionary<string, string> attributes = getAttributes(node, 1);
+            var properties = new List<Property>();
 
             foreach (var propertyNode in node.ChildNodes[2].ChildNodes)
             {
@@ -182,7 +182,7 @@ namespace Codegen
                     !string.IsNullOrWhiteSpace(defaultValue) || propertyNode.ChildNodes[0].ChildNodes.Count > 0
                 );
 
-                properties = properties.Add(p);
+                properties.Add(p);
             }
             return new DataModel.Object(node.ChildNodes[0].Token.Value.ToString(), properties, attributes);
         }
@@ -192,7 +192,7 @@ namespace Codegen
             return new TypeDeclaration(node.ChildNodes[0].Token.Value.ToString(), getAttributes(node, 1));
         }
 
-        static bool validate(Global global, ImmutableList<TypeDeclaration> externals, bool shouldValidate)
+        static bool validate(Global global, List<TypeDeclaration> externals, bool shouldValidate)
         {
             if (shouldValidate)
             {

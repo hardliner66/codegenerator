@@ -16,8 +16,8 @@ namespace Codegen.DataModel
 {
     public class ObjectWithAttributes
     {
-        public ImmutableDictionary<string, string> Attributes { get; }
-        public ObjectWithAttributes(ImmutableDictionary<string, string> attributes)
+        public Dictionary<string, string> Attributes { get; set; }
+        public ObjectWithAttributes(Dictionary<string, string> attributes)
         {
             Attributes = attributes;
         }
@@ -25,9 +25,9 @@ namespace Codegen.DataModel
 
     public class PropertyType
     {
-        public string Name { get; }
-        public bool IsList { get; }
-        public bool IsPrimitive { get; }
+        public string Name { get; set; }
+        public bool IsList { get; set; }
+        public bool IsPrimitive { get; set; }
         public PropertyType(string name, bool isList, bool isPrimitive)
         {
             Name = name;
@@ -38,13 +38,13 @@ namespace Codegen.DataModel
 
     public class Property : ObjectWithAttributes
     {
-        public string Name { get; }
-        public PropertyType Type { get; }
-        public string Default { get; }
+        public string Name { get; set; }
+        public PropertyType Type { get; set; }
+        public string Default { get; set; }
 
-        public bool Optional { get; }
+        public bool Optional { get; set; }
 
-        public Property(string name, PropertyType type, ImmutableDictionary<string, string> attributes, string default_value, bool optional) : base(attributes)
+        public Property(string name, PropertyType type, Dictionary<string, string> attributes, string default_value, bool optional) : base(attributes)
         {
             Name = name;
             Type = type;
@@ -55,8 +55,8 @@ namespace Codegen.DataModel
 
     public class Object : TypeDeclaration
     {
-        public ImmutableList<Property> Properties { get; }
-        public Object(string name, ImmutableList<Property> properties, ImmutableDictionary<string, string> attributes) : base(name, attributes)
+        public List<Property> Properties { get; set; }
+        public Object(string name, List<Property> properties, Dictionary<string, string> attributes) : base(name, attributes)
         {
             Properties = properties;
         }
@@ -64,8 +64,8 @@ namespace Codegen.DataModel
 
     public class TypeDeclaration : ObjectWithAttributes
     {
-        public string Name { get; }
-        public TypeDeclaration(string name, ImmutableDictionary<string, string> attributes) : base(attributes)
+        public string Name { get; set; }
+        public TypeDeclaration(string name, Dictionary<string, string> attributes) : base(attributes)
         {
             Name = name;
         }
@@ -81,10 +81,10 @@ namespace Codegen.DataModel
         {
             return JsonConvert.SerializeObject(this, formatted ? Formatting.Indented : Formatting.None);
         }
-        public ImmutableList<Object> Objects { get; }
-        public ImmutableList<TypeDeclaration> ExternalTypes { get; }
-        public string Namespace { get; }
-        public Global(ImmutableList<Object> objects, string @namespace, ImmutableList<TypeDeclaration> externalTypes)
+        public List<Object> Objects { get; set; }
+        public List<TypeDeclaration> ExternalTypes { get; set; }
+        public string Namespace { get; set; }
+        public Global(List<Object> objects, string @namespace, List<TypeDeclaration> externalTypes)
         {
             Objects = objects;
             Namespace = @namespace;
