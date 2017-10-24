@@ -5,11 +5,12 @@
  ```cs
     using System.Collections.Generic;
     using Codegen.DataModel;
+    using System.IO;
 
     [Codegen.Generator]
     public class GeneratorName
     {
-        public static void Execute(Global g, string path, List<string> args)
+        public static void Execute(Global g, DirectoryInfo directory, List<string> args)
         {
             // insert generation code here
         }

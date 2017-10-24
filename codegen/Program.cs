@@ -78,8 +78,8 @@ public class Program
         public string PostGeneration { get; set; }
 
         [Option('o', "out", Required = false, DefaultValue = "",
-          HelpText = "Output file.")]
-        public string Output { get; set; }
+          HelpText = "Output directory.")]
+        public string OutputDir { get; set; }
 
         [ValueList(typeof(List<string>))]
         public List<string> Args { get; set; }
@@ -111,6 +111,9 @@ public class Program
 
                 Assembly asm;
 
+                var OutputDirectory = new DirectoryInfo(options.OutputDir);
+                if (!OutputDirectory.Exists) { OutputDirectory.Create(); }
+
                 if (File.Exists(Path.Combine(options.TemplateDir, options.Generator + ".dll")))
                 {
                     asm = Assembly.LoadFrom(Path.Combine(options.TemplateDir, options.Generator + ".dll"));
@@ -123,7 +126,7 @@ public class Program
                             {
                                 if (m.Name.ToLower() == "execute")
                                 {
-                                    m.Invoke(null, new object[] { Shared.Global, options.Output, options.Args is null ? new List<string> { } : options.Args });
+                                    m.Invoke(null, new object[] { Shared.Global, OutputDirectory, options.Args is null ? new List<string> { } : options.Args });
                                 }
                             }
                             break;
@@ -141,7 +144,7 @@ public class Program
                 {
                     var process = new System.Diagnostics.Process();
                     process.StartInfo.FileName = options.PostGeneration;
-                    process.StartInfo.Arguments = $"\"{options.Output}\"";
+                    process.StartInfo.Arguments = $"\"{options.OutputDir}\"";
                     process.Start();
                 }
             }

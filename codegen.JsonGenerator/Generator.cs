@@ -2,22 +2,23 @@
 using System;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.IO;
 
 namespace codegen.JsonGenerator
 {
     [Codegen.Generator]
     public class Generator
     {
-        public static void Execute(Global g, string path, List<string> args)
+        public static void Execute(Global g, DirectoryInfo directory, List<string> args)
         {
             string output = JsonConvert.SerializeObject(g, Formatting.Indented);
-            if (string.IsNullOrWhiteSpace(path))
+            if (string.IsNullOrWhiteSpace(directory.FullName))
             {
                 Console.WriteLine(output);
             }
             else
             {
-                System.IO.File.WriteAllText(path, output);
+                System.IO.File.WriteAllText(System.IO.Path.Combine(directory.FullName, $"{g.Namespace}.json"), output);
             }
         }
     }
