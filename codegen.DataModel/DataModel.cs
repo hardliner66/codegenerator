@@ -23,20 +23,31 @@ namespace Codegen.DataModel
         }
     }
 
+    public class PropertyType
+    {
+        public string Name { get; }
+        public bool IsList { get; }
+        public bool IsPrimitive { get; }
+        public PropertyType(string name, bool isList, bool isPrimitive)
+        {
+            Name = name;
+            IsList = isList;
+            IsPrimitive = isPrimitive;
+        }
+    }
+
     public class Property : ObjectWithAttributes
     {
         public string Name { get; }
-        public string Type { get; }
-        public bool List { get; }
+        public PropertyType Type { get; }
         public string Default { get; }
 
         public bool Optional { get; }
 
-        public Property(string name, string type, bool list, ImmutableDictionary<string, string> attributes, string default_value, bool optional) : base(attributes)
+        public Property(string name, PropertyType type, ImmutableDictionary<string, string> attributes, string default_value, bool optional) : base(attributes)
         {
             Name = name;
             Type = type;
-            List = list;
             Default = default_value;
             Optional = optional;
         }

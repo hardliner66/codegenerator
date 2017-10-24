@@ -154,28 +154,29 @@ namespace Codegen
 
             foreach (var propertyNode in node.ChildNodes[2].ChildNodes)
             {
-                string type;
+                string typeName;
                 bool list = false;
                 if (propertyNode.ChildNodes[2].ChildNodes[0].Term.Name == "list")
                 {
                     list = true;
-                    type = propertyNode.ChildNodes[2].ChildNodes[0].ChildNodes[0].Token.Value.ToString();
+                    typeName = propertyNode.ChildNodes[2].ChildNodes[0].ChildNodes[0].Token.Value.ToString();
                 }
                 else
                 {
-                    type = propertyNode.ChildNodes[2].ChildNodes[0].Token.Value.ToString();
+                    typeName = propertyNode.ChildNodes[2].ChildNodes[0].Token.Value.ToString();
                 }
-                if (parserConfig.TypeMapping.ContainsKey(type.ToLower()))
+                if (parserConfig.TypeMapping.ContainsKey(typeName.ToLower()))
                 {
-                    type = parserConfig.TypeMapping[type.ToLower()];
+                    typeName = parserConfig.TypeMapping[typeName.ToLower()];
                 }
+
+                var pt = new PropertyType(typeName, list, parserConfig.Primitives.Contains(typeName.ToLower()));
 
                 var defaultValue = getDefaultValue(propertyNode);
 
                 var p = new Property(
                     propertyNode.ChildNodes[1].Token.Value.ToString(),
-                    type,
-                    list,
+                    pt,
                     getAttributes(propertyNode, 4),
                     defaultValue,
                     !string.IsNullOrWhiteSpace(defaultValue) || propertyNode.ChildNodes[0].ChildNodes.Count > 0
@@ -213,7 +214,7 @@ namespace Codegen
                 {
                     foreach (var p in o.Properties)
                     {
-                        if (!types.Contains(p.Type.ToLower()) && !externals.Any(x => x.Name.ToLower() == p.Type.ToLower()) && !parserConfig.Primitives.Contains(p.Type.ToLower()))
+                        if (!types.Contains(p.Type.Name.ToLower()) && !externals.Any(x => x.Name.ToLower() == p.Type.Name.ToLower()) && !parserConfig.Primitives.Contains(p.Type.Name.ToLower()))
                         {
                             Console.WriteLine($"Type not defined for Property: {o.Name}.{p.Name}: {p.Type}");
                             return false;
