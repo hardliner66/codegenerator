@@ -5,14 +5,15 @@
  ```cs
     using System.Collections.Generic;
     using Codegen.DataModel;
-    using System.IO;
 
     [Codegen.Generator]
     public class GeneratorName
     {
-        public static void Execute(Global g, string directory, List<string> args)
+        public static GenerationResult Execute(Global g, List<string> args)
         {
             // insert generation code here
+
+            // Do not write the generated code yourself, let the framework handle that for you
         }
     }
  ```
