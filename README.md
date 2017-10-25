@@ -13,7 +13,10 @@
         {
             // insert generation code here
 
-            // Do not write the generated code yourself, let the framework handle that for you
+            // do not write the generated code to a file yourself
+            // just return the code inside the generation result
+            // the framework will handle directory creation
+            // and writing of the file
         }
     }
  ```
