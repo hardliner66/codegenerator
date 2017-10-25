@@ -9,17 +9,13 @@ namespace codegen.JsonGenerator
     [Codegen.Generator]
     public class Generator
     {
-        public static void Execute(Global g, string directory, List<string> args)
+        public static GenerationResult Execute(Global g, List<string> args)
         {
-            string output = JsonConvert.SerializeObject(g, Formatting.Indented);
-            if (string.IsNullOrWhiteSpace(directory))
+            return new GenerationResult()
             {
-                Console.WriteLine(output);
-            }
-            else
-            {
-                System.IO.File.WriteAllText(System.IO.Path.Combine(directory, $"{g.Namespace}.json"), output);
-            }
+                Content = JsonConvert.SerializeObject(g, Formatting.Indented),
+                FileName = $"{g.Namespace}.json"
+            };
         }
     }
 }

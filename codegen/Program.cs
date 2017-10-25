@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Immutable;
 using System.Linq;
 using Irony.Parsing;
 using CommandLine;
@@ -24,12 +23,12 @@ namespace Codegen
             return Shared.Global;
         }
 
-        public bool IsSet(ImmutableDictionary<string, string> attributes, string name)
+        public bool IsSet(Dictionary<string, string> attributes, string name)
         {
             return attributes.ContainsKey(name) && attributes[name].ToLower() == "true";
         }
 
-        public T Get<T>(ImmutableDictionary<string, string> attributes, string name, T defaultValue)
+        public T Get<T>(Dictionary<string, string> attributes, string name, T defaultValue)
         {
             if (attributes.ContainsKey(name))
             {
@@ -128,7 +127,14 @@ public class Program
                             {
                                 if (m.Name.ToLower() == "execute")
                                 {
-                                    m.Invoke(null, new object[] { Shared.Global, options.OutputDir, options.Args is null ? new List<string> { } : options.Args });
+                                    var result = (GenerationResult)(m.Invoke(null, new object[] { Shared.Global, options.Args is null ? new List<string> { } : options.Args }));
+                                    if (string.IsNullOrWhiteSpace(options.OutputDir))
+                                    {
+                                        Console.WriteLine(result.Content);
+                                    } else
+                                    {
+                                        File.WriteAllText(Path.Combine(options.OutputDir, result.FileName), result.Content);
+                                    }
                                 }
                             }
                             break;

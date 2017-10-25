@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -90,5 +89,11 @@ namespace Codegen.DataModel
             Namespace = @namespace;
             ExternalTypes = externalTypes;
         }
+    }
+
+    public class GenerationResult
+    {
+        public string FileName { get; set; }
+        public string Content { get; set; }
     }
 }
