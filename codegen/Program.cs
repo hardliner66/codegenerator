@@ -135,6 +135,15 @@ public class Program
                                     {
                                         File.WriteAllText(Path.Combine(options.OutputDir, result.FileName), result.Content);
                                     }
+
+                                    if (!string.IsNullOrWhiteSpace(options.PostGeneration))
+                                    {
+                                        var process = new System.Diagnostics.Process();
+                                        process.StartInfo.FileName = options.PostGeneration;
+                                        process.StartInfo.Arguments = $"\"{result.FileName}\"";
+                                        process.Start();
+                                    }
+                                    break;
                                 }
                             }
                             break;
@@ -145,15 +154,6 @@ public class Program
                 {
                     Console.WriteLine("Generator not found.");
                     Console.WriteLine(options.GetUsage());
-                }
-
-
-                if (!string.IsNullOrWhiteSpace(options.PostGeneration))
-                {
-                    var process = new System.Diagnostics.Process();
-                    process.StartInfo.FileName = options.PostGeneration;
-                    process.StartInfo.Arguments = $"\"{options.OutputDir}\"";
-                    process.Start();
                 }
             }
             catch (Exception ex)
