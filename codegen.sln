@@ -1,15 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.15
+VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "codegen", "codegen\codegen.csproj", "{A5ACC76D-C9C3-48D2-902F-AEA60784AC22}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "codegen.DataModel", "codegen.DataModel\codegen.DataModel.csproj", "{C7362107-8E4F-4520-B220-D59D612BC828}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "codegen.JsonGenerator", "codegen.JsonGenerator\codegen.JsonGenerator.csproj", "{C256B3D1-5C43-4582-B098-BA9E86D372E7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "codegen.Format", "codegen.Format\codegen.Format.csproj", "{DA069B6F-CD82-433B-9C22-DED38783B165}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +27,6 @@ Global
 		{C256B3D1-5C43-4582-B098-BA9E86D372E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C256B3D1-5C43-4582-B098-BA9E86D372E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C256B3D1-5C43-4582-B098-BA9E86D372E7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DA069B6F-CD82-433B-9C22-DED38783B165}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DA069B6F-CD82-433B-9C22-DED38783B165}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DA069B6F-CD82-433B-9C22-DED38783B165}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DA069B6F-CD82-433B-9C22-DED38783B165}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

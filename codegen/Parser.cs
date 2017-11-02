@@ -12,6 +12,407 @@ namespace Codegen
 {
     public class DataParser
     {
+        class SyntaxRoot
+        {
+            public List<SyntaxElement> Elements = new List<SyntaxElement>();
+        }
+
+        abstract class SyntaxElement
+        {
+
+        }
+
+        class SyntaxComment : SyntaxElement
+        {
+            public string Text;
+        }
+
+        class SyntaxEmptyLine : SyntaxElement { }
+
+        class SyntaxProperty : SyntaxElement
+        {
+            public string Comment = "";
+            public string Name = "";
+            public string Type = "";
+            public string Default = "";
+            public bool List = false;
+            public bool Optional = false;
+            public string Attributes = "";
+        }
+
+        class SyntaxObject : SyntaxElement
+        {
+            public string HeaderComment = "";
+            public string FooterComment = "";
+            public string Name = "";
+            public string Attributes = "";
+            public List<SyntaxElement> Elements = new List<SyntaxElement>();
+        }
+
+        class SyntaxExternalType : SyntaxElement
+        {
+            public string Name = "";
+            public string Attributes = "";
+            public string Comment = "";
+        }
+
+        public static string PrettyPrint(string path)
+        {
+            var text = File.ReadAllText(path);
+            var grammar = new ObjectGrammar();
+            var parser = new Parser(grammar);
+
+
+            var parseTree = parser.Parse(text);
+            if (parseTree.Status == ParseTreeStatus.Error)
+            {
+                var sb = new StringBuilder();
+                foreach (var msg in parseTree.ParserMessages)
+                {
+                    sb.AppendLine($"{msg.Message} at location: {msg.Location.ToUiString()}");
+                }
+                throw new DataParserException($"Parsing failed:\n\n{sb.ToString()}");
+            }
+            else
+            {
+                var root = new SyntaxRoot();
+
+                int i = 0;
+                while (i < parseTree.Tokens.Count)
+                {
+                    if (parseTree.Tokens[i].Category == TokenCategory.Comment)
+                    {
+                        root.Elements.Add(new SyntaxComment() { Text = parseTree.Tokens[i].Text });
+                    }
+
+
+                    if (parseTree.Tokens[i].Terminal.Name.ToLower() == "object")
+                    {
+                        i++;
+
+                        SyntaxObject obj = new SyntaxObject()
+                        {
+                            Name = parseTree.Tokens[i].Text
+                        };
+                        i++;
+
+                        if (parseTree.Tokens[i].Text == "[")
+                        {
+                            i++;
+
+                            string prefix = "";
+                            while (parseTree.Tokens[i].Terminal.Name != "]")
+                            {
+                                if (parseTree.Tokens[i].Terminal.Name == "comma")
+                                {
+                                    i++;
+                                }
+
+                                obj.Attributes += $"{prefix} {parseTree.Tokens[i].Text.Trim()}";
+                                i++;
+
+                                if (parseTree.Tokens[i].Terminal.Name == "=")
+                                {
+                                    obj.Attributes += " = ";
+                                    i++;
+                                    obj.Attributes += parseTree.Tokens[i].Text;
+                                    i++;
+                                }
+
+                                prefix = ",";
+                            }
+                            i++;
+                            obj.Attributes = "[" + obj.Attributes.Trim() + "]";
+                        }
+                        int headerLine = parseTree.Tokens[i].Location.Line;
+                        i++;
+
+                        while (parseTree.Tokens[i].Text != "}")
+                        {
+                            if (parseTree.Tokens[i].Category == TokenCategory.Comment)
+                            {
+                                if (headerLine == parseTree.Tokens[i].Location.Line)
+                                {
+                                    obj.HeaderComment = parseTree.Tokens[i].Text;
+                                }
+                                else
+                                {
+                                    obj.Elements.Add(new SyntaxComment() { Text = parseTree.Tokens[i].Text });
+                                }
+                            }
+
+                            if (parseTree.Tokens[i].Terminal.Name.ToLower() == "identifier" || parseTree.Tokens[i].Terminal.Name.ToLower() == "?")
+                            {
+
+                                SyntaxProperty prop = new SyntaxProperty()
+                                {
+                                    Optional = (parseTree.Tokens[i].Terminal.Name.ToLower() == "?"),
+                                    Name = parseTree.Tokens[i + ((parseTree.Tokens[i].Terminal.Name.ToLower() == "?") ? 1 : 0)].Text
+                                };
+
+                                int propLine = parseTree.Tokens[i].Location.Line;
+
+                                if (prop.Optional)
+                                {
+                                    i++;
+                                }
+                                i++;
+                                i++;
+                                if (parseTree.Tokens[i].Terminal.Name.ToLower() == "list")
+                                {
+                                    prop.List = true;
+                                    i++;
+                                }
+                                prop.Type = parseTree.Tokens[i].Text;
+                                i++;
+
+                                if (parseTree.Tokens[i].Terminal.Name == "=")
+                                {
+                                    i++;
+                                    prop.Default = parseTree.Tokens[i].Text;
+                                    prop.Optional = true;
+                                    i++;
+                                }
+
+                                if (parseTree.Tokens[i].Terminal.Name == "[")
+                                {
+                                    i++;
+
+                                    string prefix = "";
+                                    while (parseTree.Tokens[i].Terminal.Name != "]")
+                                    {
+                                        if (parseTree.Tokens[i].Terminal.Name == "comma")
+                                        {
+                                            i++;
+                                        }
+
+                                        prop.Attributes += $"{prefix} {parseTree.Tokens[i].Text.Trim()}";
+                                        i++;
+
+                                        if (parseTree.Tokens[i].Terminal.Name == "=")
+                                        {
+                                            prop.Attributes += " = ";
+                                            i++;
+                                            prop.Attributes += parseTree.Tokens[i].Text;
+                                            i++;
+                                        }
+
+                                        prefix = ",";
+                                    }
+                                    i++;
+                                    prop.Attributes = "[" + prop.Attributes.Trim() + "]";
+                                }
+
+                                if (parseTree.Tokens[i].Category == TokenCategory.Comment)
+                                {
+                                    if (parseTree.Tokens[i].Location.Line == propLine)
+                                    {
+                                        prop.Comment = parseTree.Tokens[i].Text;
+                                        obj.Elements.Add(prop);
+                                    }
+                                    else
+                                    {
+                                        obj.Elements.Add(prop);
+                                        obj.Elements.Add(new SyntaxComment()
+                                        {
+                                            Text = parseTree.Tokens[i].Text
+                                        });
+                                    }
+                                    i++;
+                                }
+                                else
+                                {
+                                    obj.Elements.Add(prop);
+                                }
+                            }
+                        }
+                        if (parseTree.Tokens[i + 1].Category == TokenCategory.Comment)
+                        {
+                            if (parseTree.Tokens[i].Location.Line == parseTree.Tokens[i + 1].Location.Line)
+                            {
+                                obj.FooterComment = parseTree.Tokens[i + 1].Text;
+                                root.Elements.Add(obj);
+                            }
+                            else
+                            {
+                                root.Elements.Add(obj);
+                                root.Elements.Add(new SyntaxComment()
+                                {
+                                    Text = parseTree.Tokens[i + 1].Text
+                                });
+                            }
+                            i++;
+                        }
+                        else
+                        {
+                            root.Elements.Add(obj);
+                        }
+                    }
+
+                    if (parseTree.Tokens[i].Terminal.Name.ToLower() == "external")
+                    {
+                        i++;
+                        SyntaxExternalType ext = new SyntaxExternalType()
+                        {
+                            Name = parseTree.Tokens[i].Text
+                        };
+                        i++;
+                        if (parseTree.Tokens[i].Terminal.Name == "[")
+                        {
+                            i++;
+
+                            string prefix = "";
+                            while (parseTree.Tokens[i].Terminal.Name != "]")
+                            {
+                                if (parseTree.Tokens[i].Terminal.Name == "comma")
+                                {
+                                    i++;
+                                }
+
+                                ext.Attributes += $"{prefix} {parseTree.Tokens[i].Text.Trim()}";
+                                i++;
+
+                                if (parseTree.Tokens[i].Terminal.Name == "=")
+                                {
+                                    ext.Attributes += " = ";
+                                    i++;
+                                    ext.Attributes += parseTree.Tokens[i].Text;
+                                    i++;
+                                }
+
+                                prefix = ",";
+                            }
+                            i++;
+                            ext.Attributes = "[" + ext.Attributes.Trim() + "]";
+                        }
+
+                        if (parseTree.Tokens[i].Category == TokenCategory.Comment)
+                        {
+                            ext.Comment = parseTree.Tokens[i].Text;
+                            i++;
+                        }
+                        root.Elements.Add(ext);
+                    }
+
+                    i++;
+                }
+
+                var result = new StringBuilder();
+
+                foreach (var element in root.Elements)
+                {
+                    if (element is SyntaxComment comment)
+                    {
+                        result.AppendLine(comment.Text.Trim());
+                    }
+                    else if (element is SyntaxObject obj)
+                    {
+                        if (string.IsNullOrWhiteSpace(obj.Attributes))
+                        {
+                            result.Append($"object {obj.Name.Trim()} {{");
+                        }
+                        else
+                        {
+                            result.Append($"object {obj.Name.Trim()} {obj.Attributes.Trim()} {{");
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(obj.HeaderComment.Trim())) {
+                            result.AppendLine($" {obj.HeaderComment.Trim()}");
+                        }
+                        else
+                        {
+                            result.AppendLine();
+                        }
+
+                        var props = obj.Elements.Where(e => e is SyntaxProperty).Select(e => (SyntaxProperty)e);
+
+                        var nameLength = props.Max(p => p.Name.Length + (p.Optional ? 2 : 0));
+                        var typeLength = props.Max(p => p.Type.Length + (p.List ? 5 : 0));
+                        var defaultLength = props.Max(p => p.Default.Trim().Length);
+                        var hasDefault = props.Any(p => !string.IsNullOrWhiteSpace(p.Default));
+                        var attrLength = props.Max(p => p.Attributes.Length);
+
+                        foreach (var innerElement in obj.Elements)
+                        {
+                            if (innerElement is SyntaxComment innerComment)
+                            {
+                                result.AppendLine("  " + innerComment.Text.Trim());
+                            }
+                            else if (innerElement is SyntaxProperty p)
+                            {
+
+                                var propString = new StringBuilder();
+                                if (p.Optional)
+                                {
+                                    propString.Append($"? {p.Name}".PadRight(nameLength));
+                                }
+                                else
+                                {
+                                    propString.Append($"{p.Name}".PadRight(nameLength));
+                                }
+                                propString.Append(" : ");
+                                if (p.List)
+                                {
+                                    propString.Append($"List {p.Type}".PadRight(typeLength));
+                                }
+                                else
+                                {
+                                    propString.Append($"{p.Type}".PadRight(typeLength));
+                                }
+
+                                if (!string.IsNullOrWhiteSpace(p.Default.Trim()))
+                                {
+                                    propString.Append(" = ");
+                                    propString.Append(p.Default.Trim().PadRight(defaultLength));
+                                }
+                                else
+                                {
+                                    propString.Append("".PadRight(defaultLength + (hasDefault ? 3 : 0)));
+                                }
+                                if (attrLength > 0)
+                                {
+                                    propString.Append($" {p.Attributes.PadRight(attrLength)}");
+                                }
+                                propString.Append(" " + p.Comment);
+                                result.AppendLine("  " + propString.ToString().Trim());
+                            }
+                        }
+
+                        result.AppendLine($"}} {obj.FooterComment.Trim()}");
+                        result.AppendLine();
+                    }
+                }
+
+
+                foreach (var element in root.Elements)
+                {
+                    if (element is SyntaxExternalType ext)
+                    {
+
+                        if (string.IsNullOrWhiteSpace(ext.Attributes))
+                        {
+                            result.Append($"external {ext.Name.Trim()}");
+                        }
+                        else
+                        {
+                            result.Append($"external {ext.Name.Trim()} {ext.Attributes.Trim()}");
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(ext.Comment.Trim())) {
+                            result.AppendLine($" {ext.Comment.Trim()}");
+                        }
+                        else
+                        {
+                            result.AppendLine();
+                        }
+                    }
+                }
+                //result.AppendLine();
+
+                return result.ToString();
+            }
+        }
+
         public static Global Parse(string path, string config, string generator)
         {
             if (File.Exists(Path.Combine(Path.GetDirectoryName(path), config)))
