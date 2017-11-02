@@ -15,7 +15,7 @@ namespace codegen.JsonGenerator
         {
             return !regex.IsMatch(value);
         }
-        public static string GetAttributes(Dictionary<string, string> atts)
+        public static string GetAttributes(Dictionary<string, string> atts, bool appendSpace = false)
         {
             var att_string = new StringBuilder();
             var prefix = "";
@@ -41,7 +41,7 @@ namespace codegen.JsonGenerator
             var result = att_string.ToString().Trim();
             if (!string.IsNullOrWhiteSpace(result))
             {
-                result = "[" + result + "]";
+                result = "[" + result + "]" + (appendSpace ? " " : "");
             }
             return result;
         }
@@ -54,7 +54,7 @@ namespace codegen.JsonGenerator
             {
                 foreach (var o in g.Objects)
                 {
-                    result.AppendLine($"object {o.Name} {GetAttributes(o.Attributes)} {{");
+                    result.AppendLine($"object {o.Name} {GetAttributes(o.Attributes, true)}{{");
 
                     if (o.Properties.Count > 0)
                     {
