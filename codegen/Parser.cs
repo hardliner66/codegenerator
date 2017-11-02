@@ -12,7 +12,7 @@ namespace Codegen
 {
     public class DataParser
     {
-        public static Global Parse(string path, bool shouldValidate, string config, string generator)
+        public static Global Parse(string path, string config, string generator)
         {
             if (File.Exists(Path.Combine(Path.GetDirectoryName(path), config)))
             {
@@ -65,21 +65,26 @@ namespace Codegen
                 }
                 var global = new Global(objectList, Path.GetFileNameWithoutExtension(path), externalList);
 
-                if (!validate(global, externalList, shouldValidate)) {
-                    throw new DataParserException("Validation failed!");
+                if (!parserConfig.Untyped)
+                {
+                    if (!validate(global, externalList))
+                    {
+                        throw new DataParserException("Validation failed!");
+                    }
                 }
 
                 return global;
             }
         }
 
-        public class DataParserException: ApplicationException
+        public class DataParserException : ApplicationException
         {
-            public DataParserException(string msg): base(msg) { }
+            public DataParserException(string msg) : base(msg) { }
         }
 
         public class ParserConfig
         {
+            public bool Untyped = false;
             public List<string> Primitives = new List<string> { "char", "string", "bool", "int", "double", "float", "int32", "int64" };
             public Dictionary<string, string> TypeMapping = new Dictionary<string, string> { };
         }
@@ -195,33 +200,30 @@ namespace Codegen
             return new TypeDeclaration(node.ChildNodes[0].Token.Value.ToString(), getAttributes(node, 1));
         }
 
-        static bool validate(Global global, List<TypeDeclaration> externals, bool shouldValidate)
+        static bool validate(Global global, List<TypeDeclaration> externals)
         {
-            if (shouldValidate)
+            List<string> types = new List<string>();
+            foreach (var o in global.Objects)
             {
-                List<string> types = new List<string>();
-                foreach (var o in global.Objects)
+                if (types.Contains(o.Name.ToLower()))
                 {
-                    if (types.Contains(o.Name.ToLower()))
-                    {
-                        Console.WriteLine($"Duplicate Type: {o.Name}");
-                        return false;
-                    }
-                    else
-                    {
-                        types.Add(o.Name.ToLower());
-                    }
+                    Console.WriteLine($"Duplicate Type: {o.Name}");
+                    return false;
                 }
-
-                foreach (var o in global.Objects)
+                else
                 {
-                    foreach (var p in o.Properties)
+                    types.Add(o.Name.ToLower());
+                }
+            }
+
+            foreach (var o in global.Objects)
+            {
+                foreach (var p in o.Properties)
+                {
+                    if (!types.Contains(p.Type.Name.ToLower()) && !externals.Any(x => x.Name.ToLower() == p.Type.Name.ToLower()) && !parserConfig.Primitives.Contains(p.Type.Name.ToLower()))
                     {
-                        if (!types.Contains(p.Type.Name.ToLower()) && !externals.Any(x => x.Name.ToLower() == p.Type.Name.ToLower()) && !parserConfig.Primitives.Contains(p.Type.Name.ToLower()))
-                        {
-                            Console.WriteLine($"Type not defined for Property: {o.Name}.{p.Name}: {p.Type}");
-                            return false;
-                        }
+                        Console.WriteLine($"Type not defined for Property: {o.Name}.{p.Name}: {p.Type}");
+                        return false;
                     }
                 }
             }

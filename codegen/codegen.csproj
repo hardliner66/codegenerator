@@ -71,9 +71,6 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="pas.csx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="test.cdl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -85,6 +82,10 @@
     <ProjectReference Include="..\codegen.DataModel\codegen.DataModel.csproj">
       <Project>{c7362107-8e4f-4520-b220-d59d612bc828}</Project>
       <Name>codegen.DataModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\codegen.Format\codegen.Format.csproj">
+      <Project>{da069b6f-cd82-433b-9c22-ded38783b165}</Project>
+      <Name>codegen.Format</Name>
     </ProjectReference>
     <ProjectReference Include="..\codegen.JsonGenerator\codegen.JsonGenerator.csproj">
       <Project>{c256b3d1-5c43-4582-b098-ba9e86d372e7}</Project>

@@ -28,10 +28,6 @@ public class Program
           HelpText = "Template Directory. (This directory should contain the generator)")]
         public string TemplateDir { get; set; }
 
-        [Option('u', "untyped", Required = false, DefaultValue = false,
-          HelpText = "Don't validate types")]
-        public bool Untyped { get; set; }
-
         [Option('g', "generator", Required = false, DefaultValue = "codegen.JsonGenerator",
           HelpText = "The generator to use.")]
         public string Generator { get; set; }
@@ -102,7 +98,7 @@ public class Program
                                     {
                                         foreach (var file in new DirectoryInfo(options.File).GetFiles("*.cdl", SearchOption.AllDirectories))
                                         {
-                                            var global = DataParser.Parse(file.FullName, !options.Untyped, options.ConfigFile, options.Generator);
+                                            var global = DataParser.Parse(file.FullName, options.ConfigFile, options.Generator);
                                             var result = (GenerationResult)(m.Invoke(null, new object[] { global, options.Args is null ? new List<string> { } : options.Args }));
 
                                             var fullPath = Path.Combine(file.Directory.FullName, result.FileName);
@@ -119,7 +115,7 @@ public class Program
                                     }
                                     else
                                     {
-                                        var global = DataParser.Parse(options.File, !options.Untyped, options.ConfigFile, options.Generator);
+                                        var global = DataParser.Parse(options.File, options.ConfigFile, options.Generator);
                                         var result = (GenerationResult)(m.Invoke(null, new object[] { global, options.Args is null ? new List<string> { } : options.Args }));
                                         if (string.IsNullOrWhiteSpace(options.OutputDir))
                                         {

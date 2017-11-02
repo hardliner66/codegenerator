@@ -14,7 +14,7 @@ namespace Codegen
             //var identifier = new RegexBasedTerminal("identifier", "[a-zA-Z][a-zA-Z0-9_]*", "list");
             IdentifierTerminal identifier = TerminalFactory.CreateCSharpIdentifier("Identifier");
             //var identifier = new RegexBasedTerminal("identifier", @"\b((?!list)[a-zA-Z0-9_])+\b");
-            var value = new RegexBasedTerminal("name", @"\b[a-zA-Z0-9_]+\b");
+            var value = new RegexBasedTerminal("name", @"\b[a-zA-Z0-9_\.]+\b");
             var str = new QuotedValueLiteral("value", "\"", TypeCode.String);
 
             var external = new NonTerminal("external");
