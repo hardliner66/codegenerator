@@ -9,42 +9,6 @@ using Codegen.DataModel;
 using Codegen;
 using System.Collections.Generic;
 
-namespace Codegen
-{
-    public static class Shared
-    {
-        public static Global Global;
-    }
-
-    public class Helper
-    {
-        public Global GetModel()
-        {
-            return Shared.Global;
-        }
-
-        public bool IsSet(Dictionary<string, string> attributes, string name)
-        {
-            return attributes.ContainsKey(name) && attributes[name].ToLower() == "true";
-        }
-
-        public T Get<T>(Dictionary<string, string> attributes, string name, T defaultValue)
-        {
-            if (attributes.ContainsKey(name))
-            {
-                try
-                {
-                    return (T)Convert.ChangeType(attributes[name], typeof(T));
-                }
-                catch
-                {
-                }
-            }
-            return defaultValue;
-        }
-    }
-}
-
 public class Program
 {
     const string DEFAULT_OUTPUT = "<stdout>";
@@ -76,6 +40,10 @@ public class Program
           HelpText = "Command to execute after generation.")]
         public string PostGeneration { get; set; }
 
+        [Option('r', "recursive", Required = false, DefaultValue = false,
+            HelpText = "Recursively searches cdl files and generates output files beside them.")]
+        public bool Recursive { get; set; }
+
         [Option('o', "out", Required = false, DefaultValue = "",
           HelpText = "Output directory.")]
         public string OutputDir { get; set; }
@@ -94,6 +62,11 @@ public class Program
         }
     }
 
+    void Generate(Options options)
+    {
+        
+    }
+
     static void Main(string[] args)
     {
         var options = new Options();
@@ -106,8 +79,6 @@ public class Program
 
             try
             {
-                Shared.Global = DataParser.Parse(options.File, !options.Untyped, options.ConfigFile);
-
                 Assembly asm;
                 
                 if (!string.IsNullOrWhiteSpace(options.OutputDir))
@@ -127,21 +98,45 @@ public class Program
                             {
                                 if (m.Name.ToLower() == "execute")
                                 {
-                                    var result = (GenerationResult)(m.Invoke(null, new object[] { Shared.Global, options.Args is null ? new List<string> { } : options.Args }));
-                                    if (string.IsNullOrWhiteSpace(options.OutputDir))
+                                    if (options.Recursive)
                                     {
-                                        Console.WriteLine(result.Content);
-                                    } else
-                                    {
-                                        File.WriteAllText(Path.Combine(options.OutputDir, result.FileName), result.Content);
-                                    }
+                                        foreach (var file in new DirectoryInfo(options.File).GetFiles("*.cdl", SearchOption.AllDirectories))
+                                        {
+                                            var global = DataParser.Parse(file.FullName, !options.Untyped, options.ConfigFile);
+                                            var result = (GenerationResult)(m.Invoke(null, new object[] { global, options.Args is null ? new List<string> { } : options.Args }));
 
-                                    if (!string.IsNullOrWhiteSpace(options.PostGeneration))
+                                            var fullPath = Path.Combine(file.Directory.FullName, result.FileName);
+                                            File.WriteAllText(fullPath, result.Content);
+
+                                            if (!string.IsNullOrWhiteSpace(options.PostGeneration))
+                                            {
+                                                var process = new System.Diagnostics.Process();
+                                                process.StartInfo.FileName = options.PostGeneration;
+                                                process.StartInfo.Arguments = $"\"{fullPath}\"";
+                                                process.Start();
+                                            }
+                                        }
+                                    }
+                                    else
                                     {
-                                        var process = new System.Diagnostics.Process();
-                                        process.StartInfo.FileName = options.PostGeneration;
-                                        process.StartInfo.Arguments = $"\"{result.FileName}\"";
-                                        process.Start();
+                                        var global = DataParser.Parse(options.File, !options.Untyped, options.ConfigFile);
+                                        var result = (GenerationResult)(m.Invoke(null, new object[] { global, options.Args is null ? new List<string> { } : options.Args }));
+                                        if (string.IsNullOrWhiteSpace(options.OutputDir))
+                                        {
+                                            Console.WriteLine(result.Content);
+                                        }
+                                        else
+                                        {
+                                            File.WriteAllText(Path.Combine(options.OutputDir, result.FileName), result.Content);
+                                        }
+
+                                        if (!string.IsNullOrWhiteSpace(options.PostGeneration))
+                                        {
+                                            var process = new System.Diagnostics.Process();
+                                            process.StartInfo.FileName = options.PostGeneration;
+                                            process.StartInfo.Arguments = $"\"{result.FileName}\"";
+                                            process.Start();
+                                        }
                                     }
                                     break;
                                 }
