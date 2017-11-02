@@ -102,7 +102,7 @@ public class Program
                                     {
                                         foreach (var file in new DirectoryInfo(options.File).GetFiles("*.cdl", SearchOption.AllDirectories))
                                         {
-                                            var global = DataParser.Parse(file.FullName, !options.Untyped, options.ConfigFile);
+                                            var global = DataParser.Parse(file.FullName, !options.Untyped, options.ConfigFile, options.Generator);
                                             var result = (GenerationResult)(m.Invoke(null, new object[] { global, options.Args is null ? new List<string> { } : options.Args }));
 
                                             var fullPath = Path.Combine(file.Directory.FullName, result.FileName);
@@ -119,7 +119,7 @@ public class Program
                                     }
                                     else
                                     {
-                                        var global = DataParser.Parse(options.File, !options.Untyped, options.ConfigFile);
+                                        var global = DataParser.Parse(options.File, !options.Untyped, options.ConfigFile, options.Generator);
                                         var result = (GenerationResult)(m.Invoke(null, new object[] { global, options.Args is null ? new List<string> { } : options.Args }));
                                         if (string.IsNullOrWhiteSpace(options.OutputDir))
                                         {
