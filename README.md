@@ -30,3 +30,5 @@ e.g.: If you have a generator in the file MyGenerator.dll, you can call it with:
 ```
 codegen -g MyGenerator test.data
 ```
+
+[Syntax Usage Examples](https://bitbucket.org/hardliner66/codegenerator/downloads/Syntax.pdf)
