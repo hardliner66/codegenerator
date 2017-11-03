@@ -67,6 +67,139 @@ public class Program
 
     }
 
+    public static Global Sort(Global g)
+    {
+        g.Objects = g.Objects.Select((o) =>
+        {
+            o.Properties.Sort((p1, p2) => p1.Name.CompareTo(p2.Name));
+            return o;
+        }).ToList();
+        g.Objects.Sort((x, y) => x.Name.CompareTo(y.Name));
+
+        return g;
+    }
+    public static bool Compare(string obj, int index, Dictionary<string, string> g1, Dictionary<string, string> g2)
+    {
+        if (g1.Count != g2.Count)
+        {
+            Console.WriteLine($"{obj}[{index}].Attributes.Count mismatch!");
+            return false;
+        }
+        foreach (var kv in g1)
+        {
+            if (!g2.ContainsKey(kv.Key))
+            {
+                Console.WriteLine($"{obj}[{index}].Attributes[\"{kv.Key}\"].Key mismatch!");
+                return false;
+            }
+            if (g2[kv.Key] != kv.Value)
+            {
+                Console.WriteLine($"{obj}[{index}].Attributes[\"{kv.Key}\"].Value mismatch!");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static bool Compare(Global g1, Global g2)
+    {
+        if (g1.Namespace != g2.Namespace)
+        {
+            Console.WriteLine("Namespace mismatch!");
+            return false;
+        }
+
+        if (g1.ExternalTypes.Count != g2.ExternalTypes.Count)
+        {
+            Console.WriteLine("ExternalTypes.Count mismatch!");
+            return false;
+        }
+        for (var i = 0; i < g1.ExternalTypes.Count; i++)
+        {
+            if (g1.ExternalTypes[i].Name != g2.ExternalTypes[i].Name)
+            {
+                Console.WriteLine($"ExternalTypes[{i}].Name mismatch!");
+                return false;
+            }
+            if (!Compare("ExternalTypes", i, g1.ExternalTypes[i].Attributes, g2.ExternalTypes[i].Attributes))
+            {
+                return false;
+            }
+        }
+
+
+        if (g1.Objects.Count != g2.Objects.Count)
+        {
+            Console.WriteLine("Objects.Count mismatch!");
+            return false;
+        }
+
+        for (var i = 0; i < g1.Objects.Count; i++)
+        {
+            if (g1.Objects[i].Name != g2.Objects[i].Name)
+            {
+                Console.WriteLine($"Objects[{i}].Name mismatch!");
+                return false;
+            }
+
+            if (!Compare("Objects", i, g1.Objects[i].Attributes, g2.Objects[i].Attributes))
+            {
+                return false;
+            }
+
+            if (g1.Objects[i].Properties.Count != g2.Objects[i].Properties.Count)
+            {
+                Console.WriteLine($"Objects[{i}].Properties.Count mismatch!");
+                return false;
+            }
+
+            for (var n = 0; n < g1.Objects[i].Properties.Count; n++)
+            {
+                if (g1.Objects[i].Properties[n].Name != g2.Objects[i].Properties[n].Name)
+                {
+                    Console.WriteLine($"Objects[{i}].Properties[{n}].Name mismatch!");
+                    return false;
+                }
+
+                if (g1.Objects[i].Properties[n].Optional != g2.Objects[i].Properties[n].Optional)
+                {
+                    Console.WriteLine($"Objects[{i}].Properties[{n}].Optional mismatch!");
+                    return false;
+                }
+
+                if (g1.Objects[i].Properties[n].Default != g2.Objects[i].Properties[n].Default)
+                {
+                    Console.WriteLine($"Objects[{i}].Properties[{n}].Default mismatch!");
+                    return false;
+                }
+
+                if (g1.Objects[i].Properties[n].Type.Name != g2.Objects[i].Properties[n].Type.Name)
+                {
+                    Console.WriteLine($"Objects[{i}].Properties[{n}].Type.Name mismatch!");
+                    return false;
+                }
+
+                if (g1.Objects[i].Properties[n].Type.IsPrimitive != g2.Objects[i].Properties[n].Type.IsPrimitive)
+                {
+                    Console.WriteLine($"Objects[{i}].Properties[{n}].Type.IsPrimitive mismatch!");
+                    return false;
+                }
+
+                if (g1.Objects[i].Properties[n].Type.IsList != g2.Objects[i].Properties[n].Type.IsList)
+                {
+                    Console.WriteLine($"Objects[{i}].Properties[{n}].Type.IsList mismatch!");
+                    return false;
+                }
+
+                if (!Compare($"Objects[{i}].Properties", n, g1.Objects[i].Properties[n].Attributes, g1.Objects[i].Properties[n].Attributes))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     static void Main(string[] args)
     {
         var options = new Options();
@@ -85,15 +218,50 @@ public class Program
                     {
                         foreach (var file in new DirectoryInfo(options.File).GetFiles("*.cdl", SearchOption.AllDirectories))
                         {
+                            var originalText = File.ReadAllText(file.FullName);
+                            var original = Sort(DataParser.Parse(file.FullName, "", "Format"));
                             var result = DataParser.PrettyPrint(file.FullName);
 
                             File.WriteAllText(file.FullName, result);
+                            try
+                            {
+                                var afterFormat = Sort(DataParser.Parse(file.FullName, "", "Format"));
+
+                                if (!Compare(original, afterFormat))
+                                {
+                                    Console.WriteLine($"Formatting changed the content of the file. This is a bug, please open an issue. ({file.FullName})");
+                                    File.WriteAllText(file.FullName, originalText);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Error while formatting. File cannot be parsed. This is a bug, please open an issue. ({file.FullName}) {ex.Message}");
+                                File.WriteAllText(file.FullName, originalText);
+                            }
                         }
                     }
                     else
                     {
+                        var originalText = File.ReadAllText(options.File);
+                        var original = Sort(DataParser.Parse(options.File, "", "Format"));
                         var result = DataParser.PrettyPrint(options.File);
+
                         File.WriteAllText(options.File, result);
+                        try
+                        {
+                            var afterFormat = Sort(DataParser.Parse(options.File, "", "Format"));
+
+                            if (!Compare(original, afterFormat))
+                            {
+                                Console.WriteLine($"Formatting changed the content of the file. This is a bug, please open an issue. ({options.File})");
+                                File.WriteAllText(options.File, originalText);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error while formatting. File cannot be parsed. This is a bug, please open an issue. ({options.File}) {ex.Message}");
+                            File.WriteAllText(options.File, originalText);
+                        }
                     }
                 }
                 else

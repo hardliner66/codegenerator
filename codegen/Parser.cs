@@ -378,7 +378,14 @@ namespace Codegen
                             }
                         }
 
-                        result.AppendLine($"}} {obj.FooterComment.Trim()}");
+                        if (!string.IsNullOrWhiteSpace(obj.FooterComment))
+                        {
+                            result.AppendLine($"}} {obj.FooterComment.Trim()}");
+                        }
+                        else
+                        {
+                            result.AppendLine($"}}");
+                        }
                         result.AppendLine();
                     }
                 }
