@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.14
+VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "codegen", "codegen\codegen.csproj", "{A5ACC76D-C9C3-48D2-902F-AEA60784AC22}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "codegen.DataModel", "codegen.DataModel\codegen.DataModel.csproj", "{C7362107-8E4F-4520-B220-D59D612BC828}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "codegen.JsonGenerator", "codegen.JsonGenerator\codegen.JsonGenerator.csproj", "{C256B3D1-5C43-4582-B098-BA9E86D372E7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "codegen.Json", "codegen.Json\codegen.Json.csproj", "{C256B3D1-5C43-4582-B098-BA9E86D372E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

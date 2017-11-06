@@ -84,9 +84,9 @@
       <Project>{c7362107-8e4f-4520-b220-d59d612bc828}</Project>
       <Name>codegen.DataModel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\codegen.JsonGenerator\codegen.JsonGenerator.csproj">
+    <ProjectReference Include="..\codegen.Json\codegen.Json.csproj">
       <Project>{c256b3d1-5c43-4582-b098-ba9e86d372e7}</Project>
-      <Name>codegen.JsonGenerator</Name>
+      <Name>codegen.Json</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

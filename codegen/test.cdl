@@ -6,7 +6,7 @@ object InterfacedData [interfaced] {
   SomePrimitiveList1  : List Int                             // test primitive list
   SomeObjectList1     : List ExternalType                    // test object list
   SomeCrossReference1 : Data
-} 
+}
 
 // Same as above, but without interfaced attribute
 object Data {
@@ -17,7 +17,7 @@ object Data {
   SomePrimitiveList2    : List Int
   SomeObjectList2       : List ExternalType
   SomeCrossReference2   : InterfacedData
-} 
+}
 
 // Types which aren't declared in this file must be declared external
 external ExternalType

@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 
-namespace codegen.JsonGenerator
+namespace codegen.Json
 {
     [Codegen.Generator]
     public class Generator
