@@ -420,7 +420,7 @@ namespace Codegen
             }
         }
 
-        public static Global Parse(string path, string config, string generator)
+        public static Namespace Parse(string path, string config, string generator)
         {
             if (File.Exists(Path.Combine(Path.GetDirectoryName(path), config)))
             {
@@ -471,7 +471,7 @@ namespace Codegen
                         externalList.Add(parseExternal(node.ChildNodes[0]));
                     }
                 }
-                var global = new Global(objectList, Path.GetFileNameWithoutExtension(path), externalList);
+                var global = new Namespace(objectList, Path.GetFileNameWithoutExtension(path), externalList);
 
                 if (!parserConfig.Untyped)
                 {
@@ -608,10 +608,10 @@ namespace Codegen
             return new TypeDeclaration(node.ChildNodes[0].Token.Value.ToString(), getAttributes(node, 1));
         }
 
-        static bool validate(Global global, List<TypeDeclaration> externals)
+        static bool validate(Namespace n, List<TypeDeclaration> externals)
         {
             List<string> types = new List<string>();
-            foreach (var o in global.Objects)
+            foreach (var o in n.Objects)
             {
                 if (types.Contains(o.Name.ToLower()))
                 {
@@ -624,7 +624,7 @@ namespace Codegen
                 }
             }
 
-            foreach (var o in global.Objects)
+            foreach (var o in n.Objects)
             {
                 foreach (var p in o.Properties)
                 {

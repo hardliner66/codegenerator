@@ -70,11 +70,11 @@ namespace Codegen.DataModel
         }
     }
 
-    public class Global
+    public class Namespace
     {
-        public Global FromJson(string data)
+        public Namespace FromJson(string data)
         {
-            return JsonConvert.DeserializeObject<Global>(data);
+            return JsonConvert.DeserializeObject<Namespace>(data);
         }
         public string ToJson(bool formatted = false)
         {
@@ -82,11 +82,11 @@ namespace Codegen.DataModel
         }
         public List<Object> Objects { get; set; }
         public List<TypeDeclaration> ExternalTypes { get; set; }
-        public string Namespace { get; set; }
-        public Global(List<Object> objects, string @namespace, List<TypeDeclaration> externalTypes)
+        public string Name { get; set; }
+        public Namespace(List<Object> objects, string name, List<TypeDeclaration> externalTypes)
         {
             Objects = objects;
-            Namespace = @namespace;
+            Name = name;
             ExternalTypes = externalTypes;
         }
     }

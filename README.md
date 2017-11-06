@@ -9,7 +9,7 @@
     [Codegen.Generator]
     public class GeneratorName
     {
-        public static GenerationResult Execute(Global g, List<string> args)
+        public static GenerationResult Execute(Namespace n, List<string> args)
         {
             // insert generation code here
 
@@ -21,8 +21,6 @@
     }
  ```
  - Copy compiled dll into the same directory as codegen.exe
-
-#### Warning: Global is likely to be renamed
 
 
 To use the generator, pass the name of the dll without extension as argument to codegen  

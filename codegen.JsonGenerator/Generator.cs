@@ -9,12 +9,12 @@ namespace codegen.JsonGenerator
     [Codegen.Generator]
     public class Generator
     {
-        public static GenerationResult Execute(Global g, List<string> args)
+        public static GenerationResult Execute(Namespace n, List<string> args)
         {
             return new GenerationResult()
             {
-                Content = JsonConvert.SerializeObject(g, Formatting.Indented),
-                FileName = $"{g.Namespace}.json"
+                Content = JsonConvert.SerializeObject(n, Formatting.Indented),
+                FileName = $"{n.Name}.json"
             };
         }
     }

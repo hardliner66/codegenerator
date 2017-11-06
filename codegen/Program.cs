@@ -67,16 +67,16 @@ public class Program
 
     }
 
-    public static Global Sort(Global g)
+    public static Namespace Sort(Namespace n)
     {
-        g.Objects = g.Objects.Select((o) =>
+        n.Objects = n.Objects.Select((o) =>
         {
             o.Properties.Sort((p1, p2) => p1.Name.CompareTo(p2.Name));
             return o;
         }).ToList();
-        g.Objects.Sort((x, y) => x.Name.CompareTo(y.Name));
+        n.Objects.Sort((x, y) => x.Name.CompareTo(y.Name));
 
-        return g;
+        return n;
     }
     public static bool Compare(string obj, int index, Dictionary<string, string> g1, Dictionary<string, string> g2)
     {
@@ -101,97 +101,97 @@ public class Program
         return true;
     }
 
-    public static bool Compare(Global g1, Global g2)
+    public static bool Compare(Namespace n1, Namespace n2)
     {
-        if (g1.Namespace != g2.Namespace)
+        if (n1.Name != n2.Name)
         {
             Console.WriteLine("Namespace mismatch!");
             return false;
         }
 
-        if (g1.ExternalTypes.Count != g2.ExternalTypes.Count)
+        if (n1.ExternalTypes.Count != n2.ExternalTypes.Count)
         {
             Console.WriteLine("ExternalTypes.Count mismatch!");
             return false;
         }
-        for (var i = 0; i < g1.ExternalTypes.Count; i++)
+        for (var i = 0; i < n1.ExternalTypes.Count; i++)
         {
-            if (g1.ExternalTypes[i].Name != g2.ExternalTypes[i].Name)
+            if (n1.ExternalTypes[i].Name != n2.ExternalTypes[i].Name)
             {
                 Console.WriteLine($"ExternalTypes[{i}].Name mismatch!");
                 return false;
             }
-            if (!Compare("ExternalTypes", i, g1.ExternalTypes[i].Attributes, g2.ExternalTypes[i].Attributes))
+            if (!Compare("ExternalTypes", i, n1.ExternalTypes[i].Attributes, n2.ExternalTypes[i].Attributes))
             {
                 return false;
             }
         }
 
 
-        if (g1.Objects.Count != g2.Objects.Count)
+        if (n1.Objects.Count != n2.Objects.Count)
         {
             Console.WriteLine("Objects.Count mismatch!");
             return false;
         }
 
-        for (var i = 0; i < g1.Objects.Count; i++)
+        for (var i = 0; i < n1.Objects.Count; i++)
         {
-            if (g1.Objects[i].Name != g2.Objects[i].Name)
+            if (n1.Objects[i].Name != n2.Objects[i].Name)
             {
                 Console.WriteLine($"Objects[{i}].Name mismatch!");
                 return false;
             }
 
-            if (!Compare("Objects", i, g1.Objects[i].Attributes, g2.Objects[i].Attributes))
+            if (!Compare("Objects", i, n1.Objects[i].Attributes, n2.Objects[i].Attributes))
             {
                 return false;
             }
 
-            if (g1.Objects[i].Properties.Count != g2.Objects[i].Properties.Count)
+            if (n1.Objects[i].Properties.Count != n2.Objects[i].Properties.Count)
             {
                 Console.WriteLine($"Objects[{i}].Properties.Count mismatch!");
                 return false;
             }
 
-            for (var n = 0; n < g1.Objects[i].Properties.Count; n++)
+            for (var n = 0; n < n1.Objects[i].Properties.Count; n++)
             {
-                if (g1.Objects[i].Properties[n].Name != g2.Objects[i].Properties[n].Name)
+                if (n1.Objects[i].Properties[n].Name != n2.Objects[i].Properties[n].Name)
                 {
                     Console.WriteLine($"Objects[{i}].Properties[{n}].Name mismatch!");
                     return false;
                 }
 
-                if (g1.Objects[i].Properties[n].Optional != g2.Objects[i].Properties[n].Optional)
+                if (n1.Objects[i].Properties[n].Optional != n2.Objects[i].Properties[n].Optional)
                 {
                     Console.WriteLine($"Objects[{i}].Properties[{n}].Optional mismatch!");
                     return false;
                 }
 
-                if (g1.Objects[i].Properties[n].Default != g2.Objects[i].Properties[n].Default)
+                if (n1.Objects[i].Properties[n].Default != n2.Objects[i].Properties[n].Default)
                 {
                     Console.WriteLine($"Objects[{i}].Properties[{n}].Default mismatch!");
                     return false;
                 }
 
-                if (g1.Objects[i].Properties[n].Type.Name != g2.Objects[i].Properties[n].Type.Name)
+                if (n1.Objects[i].Properties[n].Type.Name != n2.Objects[i].Properties[n].Type.Name)
                 {
                     Console.WriteLine($"Objects[{i}].Properties[{n}].Type.Name mismatch!");
                     return false;
                 }
 
-                if (g1.Objects[i].Properties[n].Type.IsPrimitive != g2.Objects[i].Properties[n].Type.IsPrimitive)
+                if (n1.Objects[i].Properties[n].Type.IsPrimitive != n2.Objects[i].Properties[n].Type.IsPrimitive)
                 {
                     Console.WriteLine($"Objects[{i}].Properties[{n}].Type.IsPrimitive mismatch!");
                     return false;
                 }
 
-                if (g1.Objects[i].Properties[n].Type.IsList != g2.Objects[i].Properties[n].Type.IsList)
+                if (n1.Objects[i].Properties[n].Type.IsList != n2.Objects[i].Properties[n].Type.IsList)
                 {
                     Console.WriteLine($"Objects[{i}].Properties[{n}].Type.IsList mismatch!");
                     return false;
                 }
 
-                if (!Compare($"Objects[{i}].Properties", n, g1.Objects[i].Properties[n].Attributes, g1.Objects[i].Properties[n].Attributes))
+                if (!Compare($"Objects[{i}].Properties", n, n1.Objects[i].Properties[n].Attributes, n1.Objects[i].Properties[n].Attributes))
                 {
                     return false;
                 }
