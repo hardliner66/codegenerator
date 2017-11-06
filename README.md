@@ -1,6 +1,7 @@
 # Creating a generator
+ - Add Environment variable CODEGEN_HOME which points to the directory in which codegen.DataModel is located
  - Create a new Dll Project
- - Add reference to codegen.DataModel
+ - Add reference to $(CODEGEN_HOME)/codegen.DataModel
  - Add the following class
  ```cs
     using System.Collections.Generic;
