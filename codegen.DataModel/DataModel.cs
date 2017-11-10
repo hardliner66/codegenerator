@@ -11,6 +11,29 @@ namespace Codegen
     public class Generator : Attribute { }
 }
 
+namespace Codegen.Extensions
+{
+    public static class StringBuilderExtensions
+    {
+        public static char IndentationChar = ' ';
+        public static int IndentationCount = 2;
+
+        public static StringBuilder AppendLine(this StringBuilder sb, string value, int level)
+        {
+            return sb.AppendLine(value.PadLeft(IndentationCount * level + value.Length, IndentationChar));
+        }
+        public static StringBuilder Append(this StringBuilder sb, string value, int level)
+        {
+            return sb.Append(value.PadLeft(IndentationCount * level + value.Length, IndentationChar));
+        }
+        public static StringBuilder AppendFormat(this StringBuilder sb, string format, int level, params object[] args)
+        {
+            var str = string.Format(format, args);
+            return sb.Append(str.PadLeft(IndentationCount * level + str.Length, IndentationChar));
+        }
+    }
+}
+
 namespace Codegen.DataModel
 {
     public class ObjectWithAttributes
