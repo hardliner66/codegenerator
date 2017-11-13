@@ -7,6 +7,8 @@ import { spawn, ChildProcess } from 'child_process'
 
 const EXTENSION = ".cdl"
 
+var isWin = /^win/.test(process.platform);
+
 function ValidFile(fileName: string) {
     return extname(fileName) === EXTENSION
 }
@@ -26,7 +28,12 @@ function Format(file: string): Promise<void> {
 
     return new Promise((resolve) => {
         if (ValidFile(file)) {
-            var codegen = spawn(GetExePath(), ["-p", `"${file}"`], { shell: true, detached: true })
+            var codegen: ChildProcess
+            if (isWin) {
+                codegen = spawn(GetExePath(), ["-p", `"${file}"`], { shell: true, detached: true })
+            } else {
+                codegen = spawn("mono", [GetExePath(), "-p", `"${file}"`], { shell: true, detached: true })
+            }
 
             codegen.stdout.on('data', (data) => {
                 console.log(`codegen.Format: ${data.toString()}`)
@@ -51,7 +58,12 @@ function Generate(file: string, generator: string, generatorDir: string): Promis
         if (ValidFile(file)) {
             var directory = dirname(file)
 
-            var codegen = spawn(GetExePath(), ["-d", `"${generatorDir}"`, "-g", generator, "-o", `"${directory}"`, `"${file}"`], { shell: true, detached: true })
+            var codegen: ChildProcess
+            if (isWin) {
+                codegen = spawn(GetExePath(), ["-d", `"${generatorDir}"`, "-g", generator, "-o", `"${directory}"`, `"${file}"`], { shell: true, detached: true })
+            } else {
+                codegen = spawn("mono", [GetExePath(), "-d", `"${generatorDir}"`, "-g", generator, "-o", `"${directory}"`, `"${file}"`], { shell: true, detached: true })
+            }
 
             codegen.stdout.on('data', (data) => {
                 console.log(`codegen.Generate: ${data.toString()}`)
