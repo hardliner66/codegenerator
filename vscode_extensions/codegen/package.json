@@ -1,0 +1,77 @@
+{
+    "name": "codegen",
+    "displayName": "CodeGen",
+    "description": "",
+    "version": "0.0.1",
+    "publisher": "none",
+    "engines": {
+        "vscode": "^1.16.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "*"
+    ],
+    "main": "./out/extension",
+    "contributes": {
+        "configuration": {
+            "type": "object",
+            "title": "Codegen Options",
+            "properties": {
+                "codegen.formatOnSave": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Format on save."
+                },
+                "codegen.generateOnSave": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Generate on save."
+                },
+                "codegen.generator": {
+                    "type": "string",
+                    "default": "codegen.Json",
+                    "description": "The format in which to generate."
+                },
+                "codegen.generatorDirectory": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Where to find generators."
+                },
+                "codegen.binDirectory": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Where to find codegen.exe."
+                }
+            }
+        },
+        "commands": [
+            {
+                "command": "codegen.format",
+                "title": "Format cdl file"
+            },
+            {
+                "command": "codegen.generateWith",
+                "title": "Generate file with specified generator"
+            },
+            {
+                "command": "codegen.generate",
+                "title": "Generate file with configured generator"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "typescript": "^2.5.3",
+        "vscode": "^1.1.5",
+        "@types/node": "^7.0.43",
+        "@types/mocha": "^2.2.42"
+    }
+}

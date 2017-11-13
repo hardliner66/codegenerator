@@ -1,0 +1,8 @@
+{
+	"class": {
+		"prefix": "object",
+		"body": "\nobject ${1:name} {\n\t$2\n}\n",
+		"description": "object ...",
+		"scope": "source.cdl"
+	}
+}

@@ -1,0 +1,53 @@
+{
+	"name": "cdl-lang",
+	"displayName": "Codegen CDL Language",
+	"description": "Codegen CDL language support for VS Code",
+	"version": "0.0.2",
+	"publisher": "Hardliner66",
+	"engines": {
+		"vscode": "^0.10.1"
+	},
+	"categories": [
+		"Languages"
+	],
+	"galleryBanner": {
+		"color": "#EA7D28",
+		"theme": "light"
+	},
+	"bugs": {
+		"url": "https://github.com/hardliner66/Codegen-Syntax-VS-Code/issues"
+	},
+	"homepage": "https://github.com/hardliner66/Codegen-Syntax-VS-Code",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/hardliner66/Codegen-Syntax-VS-Code"
+	},
+	"contributes": {
+		"languages": [
+			{
+				"id": "cdl",
+				"aliases": [
+					"CDL",
+					"cdl"
+				],
+				"extensions": [
+					".cdl"
+				],
+				"configuration": "./cdl.configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "cdl",
+				"scopeName": "source.cdl",
+				"path": "./syntaxes/cdl.tmLanguage"
+			}
+		],
+		"snippets": [
+			{
+				"language": "cdl",
+				"path": "./snippets/snippets.json"
+			}
+		]
+	}
+}
