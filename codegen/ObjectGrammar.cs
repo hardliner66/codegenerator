@@ -77,7 +77,7 @@ namespace Codegen
             attributeList_opt.Rule = Empty | attributeList;
 
             list.Rule = "List" + identifier;
-            dict.Rule = "Map" + identifier + identifier;
+            dict.Rule = "Map" + identifier + "=>" + identifier;
             type.Rule = identifier | list | dict;
 
             default_value.Rule = ToTerm("=") + attribute_value;
