@@ -74,7 +74,7 @@ namespace Codegen
 
             optional_properties.Rule = Empty | properties;
 
-            @object.Rule = ToTerm("object") + identifier + attributeList_opt + "{" + comment_opt + optional_properties + "}" + comment_opt;
+            @object.Rule = ToTerm("object") + identifier + attributeList_opt + "{" + optional_properties + "}";
 
             objectList.Rule = MakePlusRule(objectList, line);
 
