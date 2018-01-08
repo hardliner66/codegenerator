@@ -210,8 +210,8 @@ public class Program
                 options.TemplateDir = AppDomain.CurrentDomain.BaseDirectory;
             }
 
-            //try
-            //{
+            try
+            {
                 if (options.Pretty)
                 {
                     if (options.Recursive)
@@ -339,12 +339,12 @@ public class Program
                         Console.WriteLine(options.GetUsage());
                     }
                 }
-            //}
-            //catch (Exception ex)
-            //{
-            //    Console.WriteLine(ex.Message);
-            //}
         }
+            catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
         if (System.Diagnostics.Debugger.IsAttached)
         {
             Console.ReadLine();
