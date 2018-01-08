@@ -24,6 +24,7 @@ namespace Codegen
             var objectList = new NonTerminal("objectList");
             var properties = new NonTerminal("properties");
             var property = new NonTerminal("property");
+            var optional_properties = new NonTerminal("optional_properties");
             var attributeList_opt = new NonTerminal("attributeList_opt");
             var attributeList = new NonTerminal("attributeList");
             var attributes = new NonTerminal("attributes");
@@ -71,7 +72,9 @@ namespace Codegen
 
             properties.Rule = MakePlusRule(properties, property);
 
-            @object.Rule = ToTerm("object") + identifier + attributeList_opt + "{" + properties + "}";
+            optional_properties.Rule = Empty | properties;
+
+            @object.Rule = ToTerm("object") + identifier + attributeList_opt + "{" + comment_opt + optional_properties + "}" + comment_opt;
 
             objectList.Rule = MakePlusRule(objectList, line);
 

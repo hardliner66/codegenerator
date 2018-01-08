@@ -316,7 +316,8 @@ namespace Codegen
                             result.Append($"object {obj.Name.Trim()} {obj.Attributes.Trim()} {{");
                         }
 
-                        if (!string.IsNullOrWhiteSpace(obj.HeaderComment.Trim())) {
+                        if (!string.IsNullOrWhiteSpace(obj.HeaderComment.Trim()))
+                        {
                             result.AppendLine($" {obj.HeaderComment.Trim()}");
                         }
                         else
@@ -405,7 +406,8 @@ namespace Codegen
                             result.Append($"external {ext.Name.Trim()} {ext.Attributes.Trim()}");
                         }
 
-                        if (!string.IsNullOrWhiteSpace(ext.Comment.Trim())) {
+                        if (!string.IsNullOrWhiteSpace(ext.Comment.Trim()))
+                        {
                             result.AppendLine($" {ext.Comment.Trim()}");
                         }
                         else
