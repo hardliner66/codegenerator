@@ -327,55 +327,59 @@ namespace Codegen
 
                         var props = obj.Elements.Where(e => e is SyntaxProperty).Select(e => (SyntaxProperty)e);
 
-                        var nameLength = props.Max(p => p.Name.Length + (p.Optional ? 2 : 0));
-                        var typeLength = props.Max(p => p.Type.Length + (p.List ? 5 : 0));
-                        var defaultLength = props.Max(p => p.Default.Trim().Length);
-                        var hasDefault = props.Any(p => !string.IsNullOrWhiteSpace(p.Default));
-                        var attrLength = props.Max(p => p.Attributes.Length);
-
-                        foreach (var innerElement in obj.Elements)
+                        if (props.Count() > 0)
                         {
-                            if (innerElement is SyntaxComment innerComment)
-                            {
-                                result.AppendLine("  " + innerComment.Text.Trim());
-                            }
-                            else if (innerElement is SyntaxProperty p)
-                            {
 
-                                var propString = new StringBuilder();
-                                if (p.Optional)
-                                {
-                                    propString.Append($"? {p.Name}".PadRight(nameLength));
-                                }
-                                else
-                                {
-                                    propString.Append($"{p.Name}".PadRight(nameLength));
-                                }
-                                propString.Append(" : ");
-                                if (p.List)
-                                {
-                                    propString.Append($"List {p.Type}".PadRight(typeLength));
-                                }
-                                else
-                                {
-                                    propString.Append($"{p.Type}".PadRight(typeLength));
-                                }
+                            var nameLength = props.Max(p => p.Name.Length + (p.Optional ? 2 : 0));
+                            var typeLength = props.Max(p => p.Type.Length + (p.List ? 5 : 0));
+                            var defaultLength = props.Max(p => p.Default.Trim().Length);
+                            var hasDefault = props.Any(p => !string.IsNullOrWhiteSpace(p.Default));
+                            var attrLength = props.Max(p => p.Attributes.Length);
 
-                                if (!string.IsNullOrWhiteSpace(p.Default.Trim()))
+                            foreach (var innerElement in obj.Elements)
+                            {
+                                if (innerElement is SyntaxComment innerComment)
                                 {
-                                    propString.Append(" = ");
-                                    propString.Append(p.Default.Trim().PadRight(defaultLength));
+                                    result.AppendLine("  " + innerComment.Text.Trim());
                                 }
-                                else
+                                else if (innerElement is SyntaxProperty p)
                                 {
-                                    propString.Append("".PadRight(defaultLength + (hasDefault ? 3 : 0)));
+
+                                    var propString = new StringBuilder();
+                                    if (p.Optional)
+                                    {
+                                        propString.Append($"? {p.Name}".PadRight(nameLength));
+                                    }
+                                    else
+                                    {
+                                        propString.Append($"{p.Name}".PadRight(nameLength));
+                                    }
+                                    propString.Append(" : ");
+                                    if (p.List)
+                                    {
+                                        propString.Append($"List {p.Type}".PadRight(typeLength));
+                                    }
+                                    else
+                                    {
+                                        propString.Append($"{p.Type}".PadRight(typeLength));
+                                    }
+
+                                    if (!string.IsNullOrWhiteSpace(p.Default.Trim()))
+                                    {
+                                        propString.Append(" = ");
+                                        propString.Append(p.Default.Trim().PadRight(defaultLength));
+                                    }
+                                    else
+                                    {
+                                        propString.Append("".PadRight(defaultLength + (hasDefault ? 3 : 0)));
+                                    }
+                                    if (attrLength > 0)
+                                    {
+                                        propString.Append($" {p.Attributes.PadRight(attrLength)}");
+                                    }
+                                    propString.Append(" " + p.Comment);
+                                    result.AppendLine("  " + propString.ToString().Trim());
                                 }
-                                if (attrLength > 0)
-                                {
-                                    propString.Append($" {p.Attributes.PadRight(attrLength)}");
-                                }
-                                propString.Append(" " + p.Comment);
-                                result.AppendLine("  " + propString.ToString().Trim());
                             }
                         }
 
@@ -570,37 +574,40 @@ namespace Codegen
             Dictionary<string, string> attributes = getAttributes(node, 1);
             var properties = new List<Property>();
 
-            foreach (var propertyNode in node.ChildNodes[2].ChildNodes)
+            if (node.ChildNodes[2].ChildNodes.Count > 0)
             {
-                string typeName;
-                bool list = false;
-                if (propertyNode.ChildNodes[2].ChildNodes[0].Term.Name == "list")
+                foreach (var propertyNode in node.ChildNodes[2].ChildNodes[0].ChildNodes)
                 {
-                    list = true;
-                    typeName = propertyNode.ChildNodes[2].ChildNodes[0].ChildNodes[0].Token.Value.ToString();
+                    string typeName;
+                    bool list = false;
+                    if (propertyNode.ChildNodes[2].ChildNodes[0].Term.Name == "list")
+                    {
+                        list = true;
+                        typeName = propertyNode.ChildNodes[2].ChildNodes[0].ChildNodes[0].Token.Value.ToString();
+                    }
+                    else
+                    {
+                        typeName = propertyNode.ChildNodes[2].ChildNodes[0].Token.Value.ToString();
+                    }
+                    if (parserConfig.TypeMapping.ContainsKey(typeName.ToLower()))
+                    {
+                        typeName = parserConfig.TypeMapping[typeName.ToLower()];
+                    }
+
+                    var pt = new PropertyType(typeName, list, parserConfig.Primitives.Contains(typeName.ToLower()));
+
+                    var defaultValue = getDefaultValue(propertyNode);
+
+                    var p = new Property(
+                        propertyNode.ChildNodes[1].Token.Value.ToString(),
+                        pt,
+                        getAttributes(propertyNode, 4),
+                        defaultValue,
+                        !string.IsNullOrWhiteSpace(defaultValue) || propertyNode.ChildNodes[0].ChildNodes.Count > 0
+                    );
+
+                    properties.Add(p);
                 }
-                else
-                {
-                    typeName = propertyNode.ChildNodes[2].ChildNodes[0].Token.Value.ToString();
-                }
-                if (parserConfig.TypeMapping.ContainsKey(typeName.ToLower()))
-                {
-                    typeName = parserConfig.TypeMapping[typeName.ToLower()];
-                }
-
-                var pt = new PropertyType(typeName, list, parserConfig.Primitives.Contains(typeName.ToLower()));
-
-                var defaultValue = getDefaultValue(propertyNode);
-
-                var p = new Property(
-                    propertyNode.ChildNodes[1].Token.Value.ToString(),
-                    pt,
-                    getAttributes(propertyNode, 4),
-                    defaultValue,
-                    !string.IsNullOrWhiteSpace(defaultValue) || propertyNode.ChildNodes[0].ChildNodes.Count > 0
-                );
-
-                properties.Add(p);
             }
             return new DataModel.Object(node.ChildNodes[0].Token.Value.ToString(), properties, attributes);
         }
